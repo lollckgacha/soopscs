@@ -5233,6 +5233,14 @@ const SOOP_DATA = {
         "imgs": [
             "images/streamers/mansik.png"
         ]
+    },
+    {
+        "id": "s654",
+        "name": "봉준",
+        "channelUrl": "https://www.sooplive.com",
+        "imgs": [
+            "images/streamers/bongjun.png"
+        ]
     }
        
 ],
