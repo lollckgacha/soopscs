@@ -2235,14 +2235,6 @@ const SOOP_DATA = {
         ]
     },
     {
-        "id": "s278",
-        "name": "주예나",
-        "channelUrl": "https://www.sooplive.co.kr/station/sam4800",
-        "imgs": [
-            "images/streamers/newjuyena.png"
-        ]
-    },
-    {
         "id": "s279",
         "name": "쥬멩이",
         "channelUrl": "https://www.sooplive.co.kr/station/ju010228",
