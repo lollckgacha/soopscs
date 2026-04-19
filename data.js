@@ -5193,6 +5193,38 @@ const SOOP_DATA = {
         "imgs": [
             "images/streamers/chungshu.png"
         ]
+    },
+    {
+        "id": "s649",
+        "name": "감스트",
+        "channelUrl": "https://www.sooplive.com",
+        "imgs": [
+            "images/streamers/gam.png"
+        ]
+    },
+    {
+        "id": "s650",
+        "name": "박재박",
+        "channelUrl": "https://www.sooplive.com",
+        "imgs": [
+            "images/streamers/parkjae.png"
+        ]
+    },
+    {
+        "id": "s651",
+        "name": "조경훈",
+        "channelUrl": "https://www.sooplive.com",
+        "imgs": [
+            "images/streamers/chogyeong.png"
+        ]
+    },
+    {
+        "id": "s652",
+        "name": "타요",
+        "channelUrl": "https://www.sooplive.com",
+        "imgs": [
+            "images/streamers/tayo.png"
+        ]
     }
        
 ],
