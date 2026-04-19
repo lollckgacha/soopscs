@@ -2263,7 +2263,7 @@ const SOOP_DATA = {
         "name": "징버거",
         "channelUrl": "https://www.sooplive.co.kr/station/jingburger1",
         "imgs": [
-            "images/streamers/jingbeogeo.png"
+            "images/streamers/jingburger.webp"
         ]
     },
     {
