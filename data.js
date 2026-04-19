@@ -5193,6 +5193,14 @@ const SOOP_DATA = {
         "imgs": [
             "images/streamers/jjoana.png"
         ]
+    },
+    {
+        "id": "s648",
+        "name": "쩡슈",
+        "channelUrl": "https://www.sooplive.com",
+        "imgs": [
+            "images/streamers/chungshu.png"
+        ]
     }
        
 ],
