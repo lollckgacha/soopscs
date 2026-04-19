@@ -31,15 +31,22 @@
         .tile-inner-wrapper {
             border-radius: 0.6rem; 
             overflow: hidden;
+            /* 둥근 테두리 계단 현상(안티앨리어싱) 방지용 마스크 트릭 */
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
+            mask-image: radial-gradient(white, black);
             transform: translateZ(0); 
             backface-visibility: hidden;
-            background-color: #1e293b; 
+            background-color: #1e293b; /* 패 배경 남색으로 원복 */
         }
         img {
             pointer-events: none;
-            transform: scale(1.02) translateZ(0);
+            /* 불필요한 이중 3D 가속을 빼고, 최소한의 스케일링만 유지 */
+            transform: scale(1.01); 
             will-change: transform;
-            image-rendering: auto;
+            /* 브라우저 이미지 스케일링 품질 최적화 */
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: high-quality;
+            -webkit-user-drag: none;
         }
         
         /* 튜토리얼 하이라이트 효과 */
@@ -179,9 +186,14 @@
             
             <!-- Header (Top Row: 버튼 및 정보) -->
             <div id="game-header" class="w-full flex justify-between items-center mb-2 sm:mb-3 bg-white px-3 sm:px-4 py-2 sm:py-3 rounded-2xl shadow-md border border-slate-200 z-20 shrink-0">
-                <button onclick="window.goMain()" class="p-2 sm:p-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-colors shrink-0" title="메인 메뉴로">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                </button>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="window.goMain()" class="p-2 sm:p-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-colors" title="메인 메뉴로">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    </button>
+                    <button onclick="window.toggleSettings(true)" class="p-2 sm:p-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-colors" title="설정">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    </button>
+                </div>
                 
                 <!-- 정보 박스 (소거가능 패, 점수 강조 - 연한 하늘색 배경) -->
                 <div class="flex items-center gap-3 sm:gap-6 md:gap-8">
@@ -235,17 +247,17 @@
                 </div>
             </div>
 
-            <!-- Game Board Area -->
-            <div id="board-outer" class="relative w-full flex-1 min-h-0 bg-slate-900 rounded-3xl p-3 sm:p-5 border-[6px] border-slate-950 shadow-2xl flex justify-center items-center overflow-hidden">
+            <!-- Game Board Area (Dark Navy Background, Reduced Padding/Borders) -->
+            <div id="board-outer" class="relative w-full flex-1 min-h-0 bg-slate-900 rounded-2xl p-2 sm:p-3 md:p-4 border-4 border-slate-950 shadow-2xl flex justify-center items-center">
                 <div id="board-aspect-container" class="relative flex-shrink-0">
-                    <div class="absolute inset-[-4px] border-4 border-slate-600/50 rounded-2xl pointer-events-none z-0"></div>
+                    <div class="absolute inset-[-2px] border-2 border-slate-600/50 rounded-xl pointer-events-none z-0"></div>
                     <div id="board-grid" class="absolute inset-0 grid w-full h-full z-10"></div>
                     
-                    <svg id="path-overlay" class="absolute inset-0 pointer-events-none w-full h-full z-40 hidden" preserveAspectRatio="none">
+                    <svg id="path-overlay" class="absolute inset-0 pointer-events-none w-full h-full z-40 hidden" preserveAspectRatio="none" style="overflow: visible;">
                         <polyline id="path-line" fill="none" stroke="#38bdf8" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-[0_0_12px_rgba(56,189,248,0.9)] path-line"></polyline>
                     </svg>
 
-                    <svg id="error-overlay" class="absolute inset-0 pointer-events-none w-full h-full z-50 hidden" preserveAspectRatio="none">
+                    <svg id="error-overlay" class="absolute inset-0 pointer-events-none w-full h-full z-50 hidden" preserveAspectRatio="none" style="overflow: visible;">
                         <line id="error-line" stroke="#ef4444" stroke-width="8" stroke-dasharray="15, 10" class="drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]"></line>
                         <g id="error-x">
                             <circle cx="0" cy="0" r="18" fill="#ef4444" class="drop-shadow-md"/>
@@ -282,10 +294,19 @@
                         메인으로 돌아가기
                     </button>
                 </div>
+
+                <!-- 섞기 진행 중 오버레이 -->
+                <div id="overlay-shuffling" class="absolute inset-0 z-[65] bg-slate-900/80 backdrop-blur-sm flex-col items-center justify-center rounded-xl border-4 border-indigo-500 hidden">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-16 h-16 text-indigo-400 mb-4 animate-spin">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <h2 class="text-3xl sm:text-4xl font-black text-white mb-2 tracking-wide">자동 섞기 발동!</h2>
+                    <p class="text-sm sm:text-lg text-indigo-200 font-bold">더 이상 맞출 수 있는 패가 없습니다.</p>
+                </div>
             </div>
             
             <div class="mt-2 text-slate-500 text-xs sm:text-sm font-semibold shrink-0">
-                팁: 패는 맵 가장자리 바깥으로 나갈 수 없습니다. 안쪽 빈 공간을 활용해 연결하세요!
+                팁: 맵 테두리 바깥 빈 공간을 통해서도 패를 두 번 꺾어 연결할 수 있습니다!
             </div>
         </div>
 
@@ -325,7 +346,7 @@
             <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border border-slate-100 flex flex-col max-h-full overflow-y-auto hide-scrollbar touch-pan-y" style="touch-action: pan-y;">
                 <div class="flex justify-between items-center mb-6 shrink-0">
                     <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 text-blue-500"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 text-blue-500"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                         설정
                     </h2>
                     <button onclick="window.toggleSettings(false)" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
@@ -334,6 +355,20 @@
                 </div>
                 
                 <div class="flex flex-col gap-4 mb-8">
+                    <!-- 맵 크기 (화면 배율) 조절 -->
+                    <div class="flex flex-col p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <div class="flex justify-between items-center mb-3">
+                            <p class="font-bold text-slate-800">게임판 화면 크기</p>
+                            <span class="text-xs text-slate-500 font-medium">크게 할수록 패가 커집니다</span>
+                        </div>
+                        <div class="flex gap-2 w-full">
+                            <button id="btn-mapsize-small" onclick="window.setMapSize('small')" class="flex-1 py-2 rounded-xl font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors text-xs sm:text-sm">작게</button>
+                            <button id="btn-mapsize-medium" onclick="window.setMapSize('medium')" class="flex-1 py-2 rounded-xl font-bold bg-blue-500 text-white shadow-md transition-colors text-xs sm:text-sm">보통</button>
+                            <button id="btn-mapsize-large" onclick="window.setMapSize('large')" class="flex-1 py-2 rounded-xl font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors text-xs sm:text-sm">크게</button>
+                            <button id="btn-mapsize-full" onclick="window.setMapSize('full')" class="flex-1 py-2 rounded-xl font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors text-xs sm:text-sm">최대</button>
+                        </div>
+                    </div>
+
                     <!-- 원픽 스트리머 설정 -->
                     <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                         <div class="flex items-center gap-3 w-full">
@@ -652,12 +687,14 @@
         };
 
         /* =========================================================================
-           [2] 게임 상태 및 레이아웃 변수
+           [2] 게임 상태 및 레이아웃 변수 
            ========================================================================= */
         let layoutMode = 'PC'; 
+        let currentMapSize = 'medium'; // 'small', 'medium', 'large', 'full'
         
         let ROWS = 8;    
         let COLS = 12;   
+        // 타일 사이즈 자체는 8x12 등으로 유지 (가상 패딩 적용)
         let GRID_ROWS = ROWS; 
         let GRID_COLS = COLS; 
         let UNIQUE_TILES = (ROWS * COLS) / 4; 
@@ -682,6 +719,46 @@
         let currentOnePick = null;
         const CHOSEONG_LIST = ['전체', 'ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ', '기타'];
         let onePickState = { search: '', cho: '전체', page: 1, perPage: 20 };
+
+        window.setMapSize = (size) => {
+            sounds.select();
+            currentMapSize = size;
+            localStorage.setItem('soopMatchBoardScale', size);
+            window.updateSettingsMapSizeUI();
+            window.applyBoardScale();
+        };
+
+        window.applyBoardScale = () => {
+            const viewGame = document.getElementById('view-game');
+            if (!viewGame) return;
+            
+            viewGame.classList.remove('max-w-3xl', 'max-w-5xl', 'max-w-7xl', 'max-w-full');
+            
+            if (currentMapSize === 'small') {
+                viewGame.classList.add('max-w-3xl');
+            } else if (currentMapSize === 'large') {
+                viewGame.classList.add('max-w-7xl');
+            } else if (currentMapSize === 'full') {
+                viewGame.classList.add('max-w-full');
+            } else {
+                viewGame.classList.add('max-w-5xl'); // default medium
+            }
+            
+            setTimeout(resizeBoard, 100);
+        };
+
+        window.updateSettingsMapSizeUI = () => {
+            ['small', 'medium', 'large', 'full'].forEach(size => {
+                const btn = document.getElementById(`btn-mapsize-${size}`);
+                if (btn) {
+                    if (size === currentMapSize) {
+                        btn.className = "flex-1 py-2 rounded-xl font-bold bg-blue-500 text-white shadow-md transition-colors text-xs sm:text-sm";
+                    } else {
+                        btn.className = "flex-1 py-2 rounded-xl font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors text-xs sm:text-sm";
+                    }
+                }
+            });
+        };
 
         window.toggleLayoutMode = (mode) => {
             layoutMode = mode;
@@ -766,19 +843,19 @@
             if (layoutMode === 'PC') {
                 b = Array(4).fill(null).map(() => Array(5).fill(null));
                 b[0][1] = { ...pool[0], instanceId: 't1-a' };
-                b[0][3] = { ...pool[0], instanceId: 't1-b' }; 
-                b[1][1] = { ...pool[1], instanceId: 't2-a' };
-                b[2][3] = { ...pool[1], instanceId: 't2-b' }; 
-                b[3][0] = { ...pool[2], instanceId: 't3-a' };
-                b[3][4] = { ...pool[2], instanceId: 't3-b' }; 
+                b[0][3] = { ...pool[0], instanceId: 't1-b' }; // 직선
+                b[2][1] = { ...pool[1], instanceId: 't2-a' };
+                b[3][3] = { ...pool[1], instanceId: 't2-b' }; // 1번 꺾임
+                b[1][0] = { ...pool[2], instanceId: 't3-a' };
+                b[3][0] = { ...pool[2], instanceId: 't3-b' }; // 2번 꺾임 (바깥 공간 활용)
             } else {
                 b = Array(5).fill(null).map(() => Array(4).fill(null));
                 b[1][0] = { ...pool[0], instanceId: 't1-a' };
-                b[3][0] = { ...pool[0], instanceId: 't1-b' }; 
-                b[1][1] = { ...pool[1], instanceId: 't2-a' };
-                b[3][2] = { ...pool[1], instanceId: 't2-b' }; 
-                b[0][3] = { ...pool[2], instanceId: 't3-a' };
-                b[4][3] = { ...pool[2], instanceId: 't3-b' }; 
+                b[3][0] = { ...pool[0], instanceId: 't1-b' }; // 직선
+                b[1][2] = { ...pool[1], instanceId: 't2-a' };
+                b[3][3] = { ...pool[1], instanceId: 't2-b' }; // 1번 꺾임
+                b[0][1] = { ...pool[2], instanceId: 't3-a' };
+                b[0][3] = { ...pool[2], instanceId: 't3-b' }; // 2번 꺾임
             }
             return b;
         };
@@ -973,6 +1050,7 @@
             if (!userData.initialized) {
                 userData.initialized = true;
                 window.saveUserData();
+                window.startInteractiveTutorial();
             } else {
                 window.saveUserData();
             }
@@ -1039,21 +1117,29 @@
         };
 
         /* =========================================================================
-           [4] 사천성 알고리즘 (최단 경로 계산)
+           [4] 사천성 알고리즘 (가상 패딩 처리 최단 경로 계산)
            ========================================================================= */
-        const isEmpty = (b, r, c) => b[r][c] === null;
+        const isEmpty = (b, r, c) => {
+            // 맵 바깥(테두리)은 무조건 비어있다고 간주하여 경로가 통과할 수 있게 함
+            if (r < 0 || r >= b.length || c < 0 || c >= b[0].length) return true;
+            return b[r][c] === null;
+        };
 
         const checkLine = (b, r1, c1, r2, c2) => {
             if (r1 !== r2 && c1 !== c2) return false;
             if (r1 === r2) {
                 const minC = Math.min(c1, c2);
                 const maxC = Math.max(c1, c2);
-                for (let c = minC + 1; c < maxC; c++) if (!isEmpty(b, r1, c)) return false;
+                for (let c = minC + 1; c < maxC; c++) {
+                    if (!isEmpty(b, r1, c)) return false;
+                }
                 return true;
             } else {
                 const minR = Math.min(r1, r2);
                 const maxR = Math.max(r1, r2);
-                for (let r = minR + 1; r < maxR; r++) if (!isEmpty(b, r, c1)) return false;
+                for (let r = minR + 1; r < maxR; r++) {
+                    if (!isEmpty(b, r, c1)) return false;
+                }
                 return true;
             }
         };
@@ -1083,10 +1169,12 @@
                 }
             };
 
+            // 직선 연결
             if (checkLine(b, r1, c1, r2, c2)) {
                 updateShortest([{r: r1, c: c1}, {r: r2, c: c2}]);
             }
 
+            // 1번 꺾임 (L자)
             if (isEmpty(b, r1, c2) && checkLine(b, r1, c1, r1, c2) && checkLine(b, r1, c2, r2, c2)) {
                 updateShortest([{r: r1, c: c1}, {r: r1, c: c2}, {r: r2, c: c2}]);
             }
@@ -1094,7 +1182,8 @@
                 updateShortest([{r: r1, c: c1}, {r: r2, c: c1}, {r: r2, c: c2}]);
             }
 
-            for (let c = 0; c < gCols; c++) {
+            // 2번 꺾임 (가로-세로-가로) - 가상 테두리(-1 및 최대크기)까지 탐색 허용
+            for (let c = -1; c <= gCols; c++) {
                 if (c !== c1 && c !== c2 && isEmpty(b, r1, c) && isEmpty(b, r2, c)) {
                     if (checkLine(b, r1, c1, r1, c) && checkLine(b, r1, c, r2, c) && checkLine(b, r2, c, r2, c2)) {
                         updateShortest([{r: r1, c: c1}, {r: r1, c: c}, {r: r2, c: c}, {r: r2, c: c2}]);
@@ -1102,7 +1191,8 @@
                 }
             }
 
-            for (let r = 0; r < gRows; r++) {
+            // 2번 꺾임 (세로-가로-세로) - 가상 테두리(-1 및 최대크기)까지 탐색 허용
+            for (let r = -1; r <= gRows; r++) {
                 if (r !== r1 && r !== r2 && isEmpty(b, r, c1) && isEmpty(b, r, c2)) {
                     if (checkLine(b, r1, c1, r, c1) && checkLine(b, r, c1, r, c2) && checkLine(b, r, c2, r2, c2)) {
                         updateShortest([{r: r1, c: c1}, {r: r, c: c1}, {r: r, c: c2}, {r: r2, c: c2}]);
@@ -1185,6 +1275,7 @@
 
             remaining = shuffleArray(remaining);
             let newBoard = Array(gRows).fill(null).map(() => Array(gCols).fill(null));
+            
             positions.forEach((pos, index) => {
                 newBoard[pos.r][pos.c] = remaining[index];
             });
@@ -1404,18 +1495,19 @@
                     const isHinted = hintTiles && hintTiles.some(t => t.r === r && t.c === c);
 
                     const cellDiv = document.createElement('div');
-                    cellDiv.className = `relative w-full h-full flex items-center justify-center p-[1px] sm:p-[2px] transition-all duration-200 ${!tile ? 'bg-white/5 rounded-lg' : ''}`;
+                    cellDiv.className = `relative w-full h-full flex items-center justify-center p-[1px] sm:p-[2px] transition-all duration-200`;
                     
                     if (tile) {
                         const tileDiv = document.createElement('div');
                         
                         let selectedClass = '';
                         if (isSelected) {
-                            selectedClass = 'border-yellow-400 scale-[1.08] shadow-[0_0_24px_rgba(250,204,21,0.8)] z-20 ring-2 ring-yellow-400';
+                            selectedClass = 'border-sky-400 scale-[1.08] shadow-[0_0_24px_rgba(56,189,248,0.8)] z-20 ring-2 ring-sky-400';
                         } else if (isHinted) {
                             selectedClass = 'border-lime-400 scale-[1.04] shadow-[0_0_24px_rgba(163,230,53,0.8)] z-[15] ring-2 ring-lime-400 animate-pulse';
                         } else {
-                            selectedClass = 'border-slate-600 hover:border-slate-400 hover:scale-[1.04] bg-black shadow-md';
+                            // 하늘색 테두리 (요청 반영 수정)
+                            selectedClass = 'border-sky-300 hover:border-sky-400 hover:scale-[1.04] shadow-md';
                         }
                         
                         tileDiv.className = `w-full h-full relative cursor-pointer rounded-xl border-[2px] sm:border-[3px] transition-all duration-200 ${selectedClass}`;
@@ -1461,7 +1553,20 @@
                 const gridCols = board[0].length;
                 overlay.setAttribute('viewBox', `0 0 ${gridCols * 100} ${gridRows * 100}`);
                 
-                const points = drawnPath.map(p => `${p.c * 100 + 50},${p.r * 100 + 50}`).join(' ');
+                const points = drawnPath.map(p => {
+                    let px = p.c * 100 + 50;
+                    let py = p.r * 100 + 50;
+                    
+                    // 맵 외곽으로 선이 지나갈 때 컨테이너 밖으로 잘리지 않도록 좌표를 패딩 안쪽으로 타이트하게 유지
+                    if (p.c < 0) px = -25;
+                    else if (p.c >= gridCols) px = gridCols * 100 + 25;
+                    
+                    if (p.r < 0) py = -25;
+                    else if (p.r >= gridRows) py = gridRows * 100 + 25;
+                    
+                    return `${px},${py}`;
+                }).join(' ');
+                
                 polyline.setAttribute('points', points);
                 
                 polyline.classList.remove('path-line');
@@ -1478,7 +1583,7 @@
             const msgObj = document.getElementById('tutorial-text');
             if (matchesLeft === 3) msgObj.innerText = "직선으로 이어진 똑같은 타일을 클릭해 맞춰보세요!";
             else if (matchesLeft === 2) msgObj.innerText = "한 번 꺾이는 타일도 맞출 수 있습니다!";
-            else if (matchesLeft === 1) msgObj.innerText = "두 번 꺾어서 연결 가능합니다!";
+            else if (matchesLeft === 1) msgObj.innerText = "테두리 바깥 빈 공간을 활용하면 두 번 꺾어서 연결 가능합니다!";
             else msgObj.innerText = "완벽합니다!";
         };
 
@@ -1496,6 +1601,12 @@
             document.getElementById('overlay-gameover').style.display = 'none';
             document.getElementById('overlay-tutorial-clear').classList.add('hidden');
             document.getElementById('overlay-tutorial-clear').style.display = 'none';
+            
+            const shufflingOverlay = document.getElementById('overlay-shuffling');
+            if (shufflingOverlay) {
+                shufflingOverlay.classList.add('hidden');
+                shufflingOverlay.style.display = 'none';
+            }
 
             if (status === 'clear') {
                 if (gameMode === 'challenge') {
@@ -1580,6 +1691,7 @@
             } else {
                 document.getElementById('view-game').classList.remove('hidden');
                 document.getElementById('view-game').style.display = 'flex';
+                window.applyBoardScale();
                 window.updateHeader();
                 renderBoard();
                 requestAnimationFrame(resizeBoard);
@@ -1595,6 +1707,11 @@
                 let local = localStorage.getItem('soopMatchUserData');
                 if(local) userData = {...userData, ...JSON.parse(local)};
             } catch(e){}
+
+            let savedMapSize = localStorage.getItem('soopMatchBoardScale');
+            if(savedMapSize) currentMapSize = savedMapSize;
+            window.updateSettingsMapSizeUI();
+            window.toggleLayoutMode(layoutMode);
 
             currentOnePick = userData.onePick || null;
             window.updateSettingsOnePickUI();
@@ -1759,18 +1876,20 @@
             window.initAudio(); 
             sounds.select();
             
-            if(window.tutorialStep === 1) {
-                window.updateTutorialUI();
-                window.openModeModal();
-                return;
-            }
+            let seen = false;
+            try { seen = localStorage.getItem('soopMatchTutorialSeen') === 'true'; } catch(e) {}
             
-            window.openModeModal();
+            if (!seen) {
+                window.startTutorial();
+            } else {
+                window.openModeModal();
+            }
         };
 
         window.finishInGameTutorial = () => {
             sounds.select();
             status = 'idle'; 
+            try { localStorage.setItem('soopMatchTutorialSeen', 'true'); } catch(e) {}
             renderOverlays();
             window.goMain();
         }
@@ -1820,17 +1939,31 @@
             sounds.select();
             hintTiles = null; 
             combo = 0; 
-            let newBoard = shuffleRemainingTiles(board);
-            let retry = 50;
-            while (countTiles(newBoard) > 0 && countMatchablePairs(newBoard) === 0 && retry > 0) {
-                 newBoard = shuffleRemainingTiles(newBoard);
-                 retry--;
-            }
-            board = newBoard;
-            selectedTile = null;
-            score = Math.max(0, score - 200); 
-            window.updateHeader();
-            renderBoard();
+            
+            document.getElementById('overlay-shuffling').classList.remove('hidden');
+            document.getElementById('overlay-shuffling').style.display = 'flex';
+            const h2 = document.querySelector('#overlay-shuffling h2');
+            const p = document.querySelector('#overlay-shuffling p');
+            if(h2) h2.innerText = "패 섞는 중...";
+            if(p) p.innerText = "남은 패를 다시 배치합니다.";
+
+            setTimeout(() => {
+                let newBoard = shuffleRemainingTiles(board);
+                let retry = 50;
+                while (countTiles(newBoard) > 0 && countMatchablePairs(newBoard) === 0 && retry > 0) {
+                     newBoard = shuffleRemainingTiles(newBoard);
+                     retry--;
+                }
+                board = newBoard;
+                selectedTile = null;
+                score = Math.max(0, score - 200); 
+                
+                document.getElementById('overlay-shuffling').classList.add('hidden');
+                document.getElementById('overlay-shuffling').style.display = 'none';
+                
+                window.updateHeader();
+                renderBoard();
+            }, 800);
         };
 
         window.handleHint = () => {
@@ -1922,31 +2055,51 @@
                                 sounds.clear();
                                 stopTimer();
                             }
+                            if (view === 'tutorial') updateTutorialMessage();
+                            updateMatchableCountUI(); 
+                            renderApp();
                         } else if (view === 'playing' && countMatchablePairs(board) === 0) {
-                            let shuffledBoard = shuffleRemainingTiles(board);
-                            let retry = 50;
-                            while (countTiles(shuffledBoard) > 0 && countMatchablePairs(shuffledBoard) === 0 && retry > 0) {
-                                shuffledBoard = shuffleRemainingTiles(shuffledBoard);
-                                retry--;
-                            }
-                            board = shuffledBoard;
+                            // 자동 섞기 연출 표시
+                            document.getElementById('overlay-shuffling').classList.remove('hidden');
+                            document.getElementById('overlay-shuffling').style.display = 'flex';
+                            const h2 = document.querySelector('#overlay-shuffling h2');
+                            const p = document.querySelector('#overlay-shuffling p');
+                            if(h2) h2.innerText = "자동 섞기 발동!";
+                            if(p) p.innerText = "더 이상 맞출 수 있는 패가 없습니다.";
+
+                            setTimeout(() => {
+                                let shuffledBoard = shuffleRemainingTiles(board);
+                                let retry = 50;
+                                while (countTiles(shuffledBoard) > 0 && countMatchablePairs(shuffledBoard) === 0 && retry > 0) {
+                                    shuffledBoard = shuffleRemainingTiles(shuffledBoard);
+                                    retry--;
+                                }
+                                board = shuffledBoard;
+                                
+                                document.getElementById('overlay-shuffling').classList.add('hidden');
+                                document.getElementById('overlay-shuffling').style.display = 'none';
+                                
+                                if (view === 'tutorial') updateTutorialMessage();
+                                updateMatchableCountUI(); 
+                                renderApp();
+                            }, 1500); // 1.5초 후 섞기 완료
+                        } else {
+                            if (view === 'tutorial') updateTutorialMessage();
+                            updateMatchableCountUI(); 
+                            renderApp();
                         }
-                        
-                        if (view === 'tutorial') updateTutorialMessage();
-                        updateMatchableCountUI(); 
-                        renderApp();
                     }, 300);
                 } else {
                     combo = 0; 
                     sounds.error(); 
                     showErrorLine(selectedTile.r, selectedTile.c, r, c);
-                    selectedTile = {r, c};
+                    selectedTile = null;
                     renderBoard();
                 }
             } else {
                 combo = 0; 
                 sounds.error(); 
-                selectedTile = {r, c};
+                selectedTile = null;
                 renderBoard();
             }
         };
