@@ -5225,6 +5225,14 @@ const SOOP_DATA = {
         "imgs": [
             "images/streamers/tayo.png"
         ]
+    },
+    {
+        "id": "s653",
+        "name": "강만식",
+        "channelUrl": "https://www.sooplive.com",
+        "imgs": [
+            "images/streamers/mansik.png"
+        ]
     }
        
 ],
