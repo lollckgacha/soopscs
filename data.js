@@ -2264,7 +2264,7 @@ const SOOP_DATA = {
         "channelUrl": "https://www.sooplive.co.kr/station/jingburger1",
         "imgs": [
             "images/streamers/jingburger.webp"
-        ]
+        ]   
     },
     {
         "id": "s283",
