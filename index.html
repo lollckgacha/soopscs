@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>숲 사천성</title>
+    <title>SOOP 사천성 (라이트 버전)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -41,26 +41,20 @@
             will-change: transform;
             image-rendering: auto;
         }
-
-        /* 3D Card Flip Animation (가챠 연출용) */
-        .card-container { perspective: 1000px; }
-        .card-flip { 
-            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); 
-            transform-style: preserve-3d; 
-            position: relative; 
-            width: 100%; height: 100%; 
-        }
-        .card-flip.flipped { transform: rotateY(180deg); }
-        .card-face { 
-            backface-visibility: hidden; 
-            position: absolute; 
-            inset: 0; 
-            width: 100%; height: 100%; 
-            border-radius: 1rem; 
-            overflow: hidden; 
-        }
-        .card-front { transform: rotateY(180deg); }
         
+        /* 튜토리얼 하이라이트 효과 */
+        .tutorial-highlight {
+            position: relative;
+            z-index: 100 !important;
+            box-shadow: 0 0 0 4px #fbbf24, 0 0 20px rgba(251, 191, 36, 0.8) !important;
+            animation: pulse-ring 1.5s infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
         body { 
             user-select: none; 
             -webkit-user-drag: none; 
@@ -87,7 +81,13 @@
     <script src="data.js"></script>
     <audio id="bgm-audio" src="bgm.mp3" loop preload="auto"></audio>
 
-    <div id="app" class="w-full h-full flex flex-col items-center justify-center p-2 sm:p-4">
+    <!-- 튜토리얼 글로벌 메시지 오버레이 -->
+    <div id="global-tutorial-msg" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-blue-600/95 backdrop-blur-md text-white px-6 py-4 rounded-full shadow-2xl font-black z-[200] flex items-center gap-3 hidden text-sm sm:text-base border-2 border-blue-400 w-11/12 max-w-lg justify-center text-center">
+        <span class="animate-bounce text-xl">👉</span>
+        <span id="global-tutorial-text">튜토리얼 메시지</span>
+    </div>
+
+    <div id="app" class="w-full h-full flex flex-col items-center justify-center p-2 sm:p-4 relative">
         
         <!-- [1] 메인 화면 -->
         <div id="view-main" class="w-full h-full flex flex-col items-center justify-center relative hidden">
@@ -97,8 +97,7 @@
                     <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> 로그인
                 </button>
                 <div id="user-profile-home" class="hidden items-center gap-1.5 bg-sky-100 border border-sky-200 px-4 py-1.5 rounded-full shadow-sm">
-                    <!-- 유저 이름 비공개, '로그인됨'으로 고정 -->
-                    <span id="user-name-home" class="text-sky-900 text-xs font-bold truncate max-w-[80px]">로그인됨</span>
+                    <span class="text-sky-900 text-xs font-bold truncate max-w-[80px]">로그인됨</span>
                     <button onclick="window.logoutGoogle()" class="text-sky-500 text-[10px] font-black ml-1 hover:text-blue-500">로그아웃</button>
                 </div>
             </div>
@@ -108,7 +107,7 @@
             <div class="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-slate-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 -z-10"></div>
 
             <div class="z-10 flex flex-col items-center w-full mt-4">
-                <div class="mb-4 text-center">
+                <div class="mb-6 text-center">
                     <h1 class="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-600 drop-shadow-sm mb-2 tracking-tighter">
                         숲 사천성
                     </h1>
@@ -118,7 +117,7 @@
                 </div>
 
                 <div class="flex flex-col gap-2 w-full max-w-sm px-4">
-                    <div class="flex items-center p-1.5 bg-white/70 backdrop-blur-md rounded-2xl border border-slate-200 shadow-sm w-full mb-1">
+                    <div class="flex items-center p-1.5 bg-white/70 backdrop-blur-md rounded-2xl border border-slate-200 shadow-sm w-full mb-2">
                         <button id="btn-layout-pc" onclick="window.toggleLayoutMode('PC')" class="flex-1 py-3 rounded-xl font-black bg-blue-500 text-white shadow-md transition-all active:scale-95 text-sm sm:text-base">
                             🖥️ PC (가로)
                         </button>
@@ -127,32 +126,27 @@
                         </button>
                     </div>
 
-                    <button onclick="window.handlePlayClick()" class="flex items-center justify-center gap-3 w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold text-xl shadow-xl shadow-blue-600/30 transition-all hover:-translate-y-1 active:scale-95">
+                    <button id="btn-play" onclick="window.handlePlayClick()" class="flex items-center justify-center gap-3 w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold text-xl shadow-xl shadow-blue-600/30 transition-all hover:-translate-y-1 active:scale-95">
                         <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" class="w-6 h-6"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                         플레이하기
                     </button>
 
-                    <!-- 보관함 & 나만의 덱 버튼 -->
-                    <div class="flex gap-2 w-full">
-                        <button onclick="window.openInventory()" class="flex-1 py-3.5 bg-gradient-to-br from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-white rounded-xl font-black shadow-md hover:scale-[1.02] active:scale-95 transition-all text-sm sm:text-base flex items-center justify-center gap-1.5">
-                            📦 보관함
+                    <div class="flex gap-2 w-full mt-1">
+                        <button onclick="window.startInteractiveTutorial()" class="flex-1 py-3 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl font-bold shadow-md transition-all active:scale-95 text-sm flex items-center justify-center gap-1.5">
+                            💡 튜토리얼
                         </button>
-                        <button onclick="window.openDeckView()" class="flex-1 py-3.5 bg-gradient-to-br from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-white rounded-xl font-black shadow-md hover:scale-[1.02] active:scale-95 transition-all text-sm sm:text-base flex items-center justify-center gap-1.5">
-                            🎴 나만의 덱
+                        <button onclick="window.toggleSettings(true)" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold shadow-md transition-all active:scale-95 text-sm flex items-center justify-center gap-1.5">
+                            ⚙️ 설정
                         </button>
                     </div>
-
-                    <button onclick="window.toggleSettings(true)" class="flex items-center justify-center gap-3 w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-lg shadow-lg transition-all hover:-translate-y-1 active:scale-95">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                        설정
-                    </button>
                     
-                    <div class="w-full mt-2 bg-white/70 p-3 rounded-2xl border border-sky-200 text-left shadow-sm selectable-text h-auto transition-colors z-10 backdrop-blur-sm">
-                        <h3 class="font-extrabold text-sky-900 mb-1.5 text-sm border-b border-sky-200 pb-1.5 flex items-center gap-1">
+                    <div class="w-full mt-4 bg-white/70 p-4 rounded-2xl border border-sky-200 text-left shadow-sm selectable-text h-auto transition-colors z-10 backdrop-blur-sm">
+                        <h3 class="font-extrabold text-sky-900 mb-2 text-sm border-b border-sky-200 pb-2 flex items-center gap-1">
                             <span>📢</span> 제작자 공지사항
                         </h3>
-                        <ul class="list-disc pl-5 space-y-1 text-[11px] sm:text-xs text-sky-700 font-medium leading-relaxed">
+                        <ul class="list-disc pl-5 space-y-1.5 text-[11px] sm:text-xs text-sky-700 font-medium leading-relaxed">
                             <li><strong>구글 로그인 시 클리어 기록이 서버에 저장됩니다!</strong></li>
+                            <li>아바타 이미지 교체 및 스트리머 추가 문의는 언제나 환영입니다!</li>
                             <li>버그 제보 및 문의는 아래 이메일로 부탁드립니다.</li>
                             <li class="font-bold text-blue-600">이메일: konamp63@gmail.com</li>
                         </ul>
@@ -174,65 +168,10 @@
             </div>
         </div>
 
-        <!-- [3] 보관함 (Inventory) -->
-        <div id="view-inventory" class="w-full h-full flex-col items-center justify-center relative hidden z-40 bg-slate-100">
-            <button onclick="window.goMain()" class="absolute top-4 left-4 sm:top-6 sm:left-6 p-2 sm:p-3 bg-white hover:bg-slate-200 text-slate-600 rounded-xl transition-colors shadow-sm">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-            </button>
-            <div class="bg-white p-8 sm:p-12 rounded-3xl shadow-xl flex flex-col items-center border border-slate-200 text-center w-11/12 max-w-sm">
-                <span class="text-6xl sm:text-7xl mb-4 drop-shadow-md">📦</span>
-                <p class="text-lg font-bold text-slate-500 mb-1">보유한 카드팩</p>
-                <p class="text-5xl font-black text-blue-600 mb-8"><span id="inventory-pack-count">0</span><span class="text-2xl text-slate-800 ml-1">개</span></p>
-                <button onclick="window.openOnePack()" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-black text-xl rounded-2xl shadow-lg transition-transform active:scale-95 flex justify-center items-center gap-2">
-                    <span>카드팩 열기</span>
-                    <span class="text-sm bg-black/20 px-2 py-0.5 rounded-md">-1</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- [4] 카드팩 열기 (Gacha Animation) -->
-        <div id="view-pack-open" class="w-full h-full flex-col items-center justify-center relative hidden z-[100] bg-slate-900/95 backdrop-blur-md">
-            <button onclick="window.skipPackAnimation()" class="absolute top-4 right-4 sm:top-6 sm:right-6 text-white bg-white/20 hover:bg-white/30 px-4 py-2 rounded-full font-bold text-sm sm:text-base transition-colors z-50 shadow-md border border-white/30">스킵 ⏭</button>
-            
-            <div id="pack-card-container" class="w-48 h-72 sm:w-64 sm:h-96 relative cursor-pointer card-container mt-10" onclick="window.flipCurrentCard()">
-                <!-- JS inserted -->
-            </div>
-            <p id="pack-click-hint" class="text-white/60 font-bold mt-8 animate-pulse text-sm sm:text-base">카드를 터치하여 뒤집으세요</p>
-
-            <div id="pack-result-wrapper" class="hidden flex-col items-center w-full max-w-4xl px-2 sm:px-4">
-                <h2 class="text-2xl sm:text-3xl font-black text-white mb-6 drop-shadow-md">획득한 스트리머</h2>
-                <div id="pack-result-grid" class="w-full grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3"></div>
-                <button id="btn-pack-done" onclick="window.closePackOpen()" class="mt-8 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white px-10 py-4 rounded-full font-black text-xl shadow-[0_0_20px_rgba(59,130,246,0.6)] transition-all active:scale-95 border border-blue-400">확인</button>
-            </div>
-        </div>
-
-        <!-- [5] 나만의 덱 화면 -->
-        <div id="view-deck" class="w-full h-full flex-col items-center relative hidden z-50 bg-slate-50 p-2 sm:p-4 overflow-hidden">
-            <!-- Header -->
-            <div class="w-full max-w-5xl flex justify-between items-center bg-white p-3 sm:p-4 rounded-2xl shadow-sm mb-3 shrink-0">
-                <button onclick="window.goMain()" class="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl active:scale-95 text-sm sm:text-base">취소</button>
-                <div class="font-black text-base sm:text-lg text-slate-800 flex items-center gap-2">
-                    <span id="deck-count" class="text-blue-600 text-xl sm:text-2xl">0</span> 
-                    <span class="text-slate-400">/ 24</span>
-                </div>
-                <button onclick="window.saveDeck()" class="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-md active:scale-95 text-sm sm:text-base">저장</button>
-            </div>
-            <!-- Controls -->
-            <div class="w-full max-w-5xl flex gap-2 mb-3 shrink-0">
-                <button onclick="window.clearDeck()" class="flex-1 py-3 sm:py-4 bg-white border border-rose-200 text-red-500 hover:bg-rose-50 font-bold rounded-xl active:scale-95 transition-colors shadow-sm text-xs sm:text-base">전체 해제</button>
-                <button onclick="window.randomDeck()" class="flex-1 py-3 sm:py-4 bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-bold rounded-xl active:scale-95 transition-colors shadow-sm text-xs sm:text-base">무작위 24명</button>
-            </div>
-            <!-- Grid Wrapper -->
-            <div class="w-full max-w-5xl flex-1 min-h-0 bg-white rounded-3xl shadow-inner border border-slate-200 p-2 sm:p-4 overflow-y-auto">
-                <div id="deck-grid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 sm:gap-3 content-start">
-                    <!-- JS populated -->
-                </div>
-            </div>
-        </div>
-
-        <!-- [6] 게임 및 튜토리얼 화면 -->
+        <!-- [3] 게임 및 튜토리얼 화면 -->
         <div id="view-game" class="w-full h-full max-w-5xl flex-col items-center hidden relative z-10 min-h-0">
-            <!-- Header -->
+            
+            <!-- Header (Top Row: 버튼 및 정보) -->
             <div id="game-header" class="w-full flex justify-between items-center mb-2 sm:mb-3 bg-white px-3 sm:px-4 py-2 sm:py-3 rounded-2xl shadow-md border border-slate-200 z-20 shrink-0">
                 <button onclick="window.goMain()" class="p-2 sm:p-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-colors shrink-0" title="메인 메뉴로">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
@@ -313,8 +252,7 @@
                 <div id="overlay-clear" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-sm flex-col items-center justify-center rounded-xl border-4 border-sky-400 hidden">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-16 h-16 text-blue-500 mb-4 animate-bounce"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>
                     <h2 class="text-4xl font-black text-slate-900 mb-2">게임 클리어!</h2>
-                    <p class="text-xl text-slate-600 mb-2 font-bold">기록: <span id="clear-score" class="text-blue-600">0</span></p>
-                    <p id="clear-reward-msg" class="text-xl font-black text-amber-500 mb-6 drop-shadow-sm"></p>
+                    <p class="text-xl text-slate-600 mb-6 font-bold">기록: <span id="clear-score" class="text-blue-600">0</span></p>
                     <button onclick="window.openModeModal()" class="flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-xl shadow-xl transition-all hover:-translate-y-1 active:scale-95">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
                         다시 하기
@@ -333,9 +271,9 @@
                 <div id="overlay-tutorial-clear" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-sm flex-col items-center justify-center rounded-xl border-4 border-sky-400 hidden">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-16 h-16 text-blue-500 mb-4 animate-bounce"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>
                     <h2 class="text-4xl font-black text-slate-900 mb-4">튜토리얼 완료!</h2>
-                    <button onclick="window.finishTutorial()" class="flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-xl shadow-xl transition-all hover:-translate-y-1 active:scale-95">
+                    <button onclick="window.finishInGameTutorial()" class="flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-xl shadow-xl transition-all hover:-translate-y-1 active:scale-95">
                         <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" class="w-6 h-6"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                        모드 선택하기
+                        메인으로 돌아가기
                     </button>
                 </div>
             </div>
@@ -359,7 +297,7 @@
                 </div>
                 
                 <div class="flex flex-col gap-4 mb-4">
-                    <button onclick="window.selectModeAndStart('normal')" class="flex flex-col items-start p-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl transition-all active:scale-95 text-left group">
+                    <button id="btn-mode-normal" onclick="window.selectModeAndStart('normal')" class="flex flex-col items-start p-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl transition-all active:scale-95 text-left group">
                         <span class="font-bold text-lg text-slate-800 group-hover:text-blue-600 flex items-center gap-2">
                             🌿 일반 모드
                         </span>
@@ -381,7 +319,7 @@
             <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border border-slate-100 flex flex-col max-h-full overflow-y-auto hide-scrollbar touch-pan-y" style="touch-action: pan-y;">
                 <div class="flex justify-between items-center mb-6 shrink-0">
                     <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 text-blue-500"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 text-blue-500"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                         설정
                     </h2>
                     <button onclick="window.toggleSettings(false)" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
@@ -390,6 +328,7 @@
                 </div>
                 
                 <div class="flex flex-col gap-4 mb-8">
+
                     <!-- 원픽 스트리머 설정 -->
                     <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                         <div class="flex items-center gap-3 w-full">
@@ -422,13 +361,13 @@
                         <input type="range" id="bgm-volume-slider" min="0" max="100" value="50" oninput="window.updateBgmVolume(this.value)" class="w-full accent-blue-500" style="touch-action: pan-x;">
                     </div>
 
-                    <!-- 튜토리얼 초기화 -->
+                    <!-- 데이터 완전 초기화 -->
                     <div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
                         <div>
-                            <p class="font-bold text-slate-800">튜토리얼 초기화</p>
-                            <p class="text-xs text-slate-500 mt-1">다음 시작 시 튜토리얼을 봅니다.</p>
+                            <p class="font-bold text-red-600">데이터 초기화</p>
+                            <p class="text-xs text-slate-500 mt-1">모든 기록을 삭제하고 처음부터 시작합니다.</p>
                         </div>
-                        <button onclick="window.resetTutorial()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold rounded-xl transition-colors shrink-0 ml-2">
+                        <button onclick="window.resetData()" class="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 font-semibold rounded-xl transition-colors shrink-0 ml-2">
                             초기화
                         </button>
                     </div>
@@ -617,10 +556,8 @@
         let userData = { 
             bestScore_challenge: 0, 
             bestTime_normal: 999999,
-            packs: 0,
-            ownedCards: {},
-            customDeck: [],
-            onePick: null
+            onePick: null,
+            initialized: false
         };
 
         window.saveUserData = async function() {
@@ -655,10 +592,8 @@
                     const data = s.val();
                     if (data.bestScore_challenge) userData.bestScore_challenge = data.bestScore_challenge;
                     if (data.bestTime_normal) userData.bestTime_normal = data.bestTime_normal;
-                    if (typeof data.packs === 'number') userData.packs = data.packs;
-                    if (data.ownedCards) userData.ownedCards = data.ownedCards;
-                    if (data.customDeck) userData.customDeck = data.customDeck;
                     if (data.onePick) userData.onePick = data.onePick;
+                    if (data.initialized) userData.initialized = data.initialized;
                     
                     currentOnePick = userData.onePick;
                     window.updateSettingsOnePickUI();
@@ -700,7 +635,12 @@
         };
 
         const getStreamersData = () => {
-            if (typeof window.SOOP_DATA !== 'undefined' && window.SOOP_DATA && window.SOOP_DATA.streamers && window.SOOP_DATA.streamers.length > 0) {
+            try {
+                if (typeof SOOP_DATA !== 'undefined' && SOOP_DATA && SOOP_DATA.streamers) {
+                    return SOOP_DATA.streamers;
+                }
+            } catch (e) {}
+            if (typeof window !== 'undefined' && window.SOOP_DATA && window.SOOP_DATA.streamers) {
                 return window.SOOP_DATA.streamers;
             }
             return FALLBACK_DATA.streamers;
@@ -725,28 +665,18 @@
         let status = 'idle'; 
         let score = 0;
         let matchesLeft = 0;
-        
         let combo = 0; 
-
         let timeLeft = 60; 
         let timeElapsed = 0; 
         let timerInterval = null;
-        
-        let currentOnePick = null;
         let hintTiles = null; 
-        const CHOSEONG_LIST = ['전체', 'ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ', '기타'];
-        let onePickState = { search: '', cho: '전체', page: 1, perPage: 20 };
         
         const imageCache = {};
-
-        // 가챠팩 상태
-        let currentPackResults = [];
-        let currentPackIndex = 0;
-        let isFlipping = false;
-        let isPackInitial = false;
-
-        // 나만의 덱 상태
-        let tempDeck = [];
+        window.tutorialStep = 0;
+        
+        let currentOnePick = null;
+        const CHOSEONG_LIST = ['전체', 'ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ', '기타'];
+        let onePickState = { search: '', cho: '전체', page: 1, perPage: 20 };
 
         window.toggleLayoutMode = (mode) => {
             layoutMode = mode;
@@ -777,24 +707,32 @@
         };
 
         const generateTiles = () => {
-            let allStreamers = getStreamersData();
-            
-            // 나만의 덱에서 24명 추출
-            let deckStreamers = userData.customDeck.map(id => allStreamers.find(s => s.id === id)).filter(Boolean);
-            
-            // 만약 덱이 손상되어 24명이 안 되면, 랜덤으로 채움
-            if (deckStreamers.length < UNIQUE_TILES) {
-                let available = shuffleArray(allStreamers);
-                while(deckStreamers.length < UNIQUE_TILES && available.length > 0) {
-                    let s = available.pop();
-                    if(!deckStreamers.some(ds => ds.id === s.id)) deckStreamers.push(s);
+            let streamersData = getStreamersData();
+            if (!streamersData || streamersData.length === 0) streamersData = FALLBACK_DATA.streamers;
+
+            let availableData = [...streamersData];
+            let pool = [];
+
+            if (currentOnePick) {
+                const onePickIndex = availableData.findIndex(s => s.id === currentOnePick);
+                if (onePickIndex !== -1) {
+                    pool.push(availableData[onePickIndex]);
+                    availableData.splice(onePickIndex, 1);
                 }
             }
 
-            deckStreamers = deckStreamers.slice(0, UNIQUE_TILES);
+            availableData = shuffleArray(availableData);
+            let needed = UNIQUE_TILES - pool.length;
+            pool = pool.concat(availableData.slice(0, needed));
+
+            let maxSafeguard = 1000;
+            while (pool.length < UNIQUE_TILES && maxSafeguard > 0) {
+                pool = pool.concat(streamersData).slice(0, UNIQUE_TILES);
+                maxSafeguard--;
+            }
 
             let deck = [];
-            deckStreamers.forEach((streamer) => {
+            pool.forEach((streamer) => {
                 for (let i = 0; i < 4; i++) {
                     deck.push({ ...streamer, instanceId: `${streamer.id}-${i}` });
                 }
@@ -888,7 +826,7 @@
         };
 
         /* =========================================================================
-           [3-B] 원픽 선택 기능 & 가챠 시스템 연동
+           [3-C] 원픽 선택 기능 (가챠/인벤토리 없이 플레이 풀에만 포함시킴)
            ========================================================================= */
         const getChoseong = (char) => {
             const code = char.charCodeAt(0) - 0xac00;
@@ -914,7 +852,7 @@
             if (isInitial) {
                 document.getElementById('btn-onepick-skip').classList.remove('hidden');
                 document.getElementById('btn-onepick-close').classList.add('hidden');
-                document.getElementById('btn-onepick-skip').innerText = '선택 안함 (무작위 24명 지급)';
+                document.getElementById('btn-onepick-skip').innerText = '선택 안함';
             } else {
                 document.getElementById('btn-onepick-skip').classList.remove('hidden');
                 document.getElementById('btn-onepick-close').classList.remove('hidden');
@@ -1019,8 +957,6 @@
         };
 
         window.selectOnePick = (id) => {
-            const isFirstTime = !localStorage.getItem('soopMatchOnePickSet');
-            
             sounds.select();
             currentOnePick = id;
             userData.onePick = id;
@@ -1029,21 +965,10 @@
             window.updateSettingsOnePickUI();
             window.closeOnePickModal();
             
-            // 최초 선택 시, 기본 카드 24종 세팅 후 가챠 오픈 연출
-            if (isFirstTime && (!userData.ownedCards || Object.keys(userData.ownedCards).length === 0)) {
-                let all = getStreamersData();
-                let pool = all.filter(s => s.id !== id);
-                pool = shuffleArray(pool);
-                
-                let initialDrop = [];
-                if (id) initialDrop.push(all.find(s => s.id === id));
-                initialDrop = initialDrop.concat(pool.slice(0, 24 - initialDrop.length));
-                
-                initialDrop.forEach(s => userData.ownedCards[s.id] = true);
-                userData.customDeck = initialDrop.map(s => s.id);
+            if (!userData.initialized) {
+                userData.initialized = true;
                 window.saveUserData();
-                
-                window.openPackOpenView(initialDrop, true);
+                window.startInteractiveTutorial();
             } else {
                 window.saveUserData();
             }
@@ -1069,238 +994,44 @@
             avatarEl.innerHTML = `<div class="w-full h-full bg-slate-100 flex items-center justify-center text-slate-400 font-black text-sm">?</div>`;
         };
 
-        /* =========================================================================
-           [3-C] 보관함(Inventory) 및 카드팩 시스템
-           ========================================================================= */
-        window.openInventory = () => {
-            sounds.select();
-            document.getElementById('inventory-pack-count').innerText = userData.packs || 0;
-            
-            document.getElementById('view-main').classList.add('hidden');
-            document.getElementById('view-main').style.display = 'none';
-            document.getElementById('view-inventory').classList.remove('hidden');
-            document.getElementById('view-inventory').style.display = 'flex';
-        };
-
-        window.openOnePack = () => {
-            sounds.select();
-            if (userData.packs <= 0) {
-                alert("보유한 카드팩이 없습니다. 게임을 클리어하여 획득하세요!");
-                return;
-            }
-            
-            userData.packs--;
-            window.saveUserData();
-            document.getElementById('inventory-pack-count').innerText = userData.packs;
-            
-            let pool = getStreamersData();
-            pool = shuffleArray(pool);
-            let results = pool.slice(0, 10);
-            
-            results.forEach(s => userData.ownedCards[s.id] = true);
-            window.saveUserData();
-            
-            document.getElementById('view-inventory').classList.add('hidden');
-            document.getElementById('view-inventory').style.display = 'none';
-            window.openPackOpenView(results, false);
-        };
-
-        window.openPackOpenView = (results, isInitial = false) => {
-            currentPackResults = results;
-            currentPackIndex = 0;
-            isPackInitial = isInitial;
-            isFlipping = false;
-            
-            document.getElementById('view-main').classList.add('hidden');
-            document.getElementById('view-main').style.display = 'none';
-            document.getElementById('view-inventory').classList.add('hidden');
-            document.getElementById('view-inventory').style.display = 'none';
-            
-            document.getElementById('view-pack-open').classList.remove('hidden');
-            document.getElementById('view-pack-open').style.display = 'flex';
-            
-            document.getElementById('pack-card-container').classList.remove('hidden');
-            document.getElementById('pack-click-hint').classList.remove('hidden');
-            document.getElementById('pack-click-hint').innerText = "카드를 터치하여 뒤집으세요";
-            document.getElementById('pack-result-wrapper').classList.add('hidden');
-            document.getElementById('pack-result-wrapper').classList.remove('flex');
-            
-            window.showCard(0);
-        };
-
-        window.showCard = (index) => {
-            const container = document.getElementById('pack-card-container');
-            const streamer = currentPackResults[index];
-            const imgSrc = streamer.imgs && streamer.imgs.length > 0 ? streamer.imgs[0] : '';
-            const fb = `https://ui-avatars.com/api/?name=${encodeURIComponent(streamer.name)}&background=0f172a&color=38bdf8`;
-            
-            container.innerHTML = `
-                <div id="gacha-card" class="card-flip shadow-[0_10px_30px_rgba(0,0,0,0.5)] rounded-2xl">
-                    <div class="card-face card-back bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center border-[6px] border-white/20">
-                        <span class="text-6xl sm:text-8xl text-white/40 font-black drop-shadow-md">?</span>
-                    </div>
-                    <div class="card-face card-front bg-white border-[6px] border-yellow-400 flex flex-col">
-                        <img src="${imgSrc}" onerror="this.onerror=null; this.src='${fb}';" class="w-full h-full object-cover">
-                        <div class="absolute bottom-0 w-full bg-slate-900/80 backdrop-blur-sm p-3 text-center text-white font-bold text-lg sm:text-xl border-t border-slate-700 truncate px-2">${streamer.name}</div>
-                    </div>
-                </div>
-            `;
-        };
-
-        window.flipCurrentCard = () => {
-            if (isFlipping) return;
-            const card = document.getElementById('gacha-card');
-            
-            if (!card.classList.contains('flipped')) {
-                isFlipping = true;
-                sounds.match(); 
-                card.classList.add('flipped');
-                document.getElementById('pack-click-hint').innerText = "터치하여 다음 카드로";
-                setTimeout(() => { isFlipping = false; }, 600);
-            } else {
-                currentPackIndex++;
-                if (currentPackIndex < currentPackResults.length) {
-                    document.getElementById('pack-click-hint').innerText = "카드를 터치하여 뒤집으세요";
-                    window.showCard(currentPackIndex);
-                } else {
-                    window.skipPackAnimation();
-                }
-            }
-        };
-
-        window.skipPackAnimation = () => {
-            sounds.select();
-            document.getElementById('pack-card-container').classList.add('hidden');
-            document.getElementById('pack-click-hint').classList.add('hidden');
-            
-            const wrapper = document.getElementById('pack-result-wrapper');
-            const grid = document.getElementById('pack-result-grid');
-            
-            grid.innerHTML = currentPackResults.map(s => {
-                const imgSrc = s.imgs && s.imgs.length > 0 ? s.imgs[0] : '';
-                const fb = `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=0f172a&color=38bdf8`;
-                return `
-                <div class="bg-slate-800 rounded-xl overflow-hidden border-2 border-slate-600 flex flex-col items-center">
-                    <img src="${imgSrc}" onerror="this.onerror=null; this.src='${fb}';" class="w-full aspect-square object-cover">
-                    <span class="text-white text-[0.65rem] sm:text-xs font-bold p-1 w-full text-center truncate">${s.name}</span>
-                </div>
-                `;
-            }).join('');
-            
-            wrapper.classList.remove('hidden');
-            wrapper.classList.add('flex');
-        };
-
-        window.closePackOpen = () => {
-            sounds.select();
-            document.getElementById('view-pack-open').classList.add('hidden');
-            document.getElementById('view-pack-open').style.display = 'none';
-            
-            if (isPackInitial) {
-                window.goMain();
-            } else {
-                window.openInventory();
-            }
-        };
 
         /* =========================================================================
-           [3-D] 나만의 덱(Deck) 구성 기능
+           [3-E] 인터랙티브 튜토리얼 로직
            ========================================================================= */
-        window.openDeckView = () => {
-            sounds.select();
-            if (!userData.customDeck) userData.customDeck = [];
-            tempDeck = [...userData.customDeck];
-            
-            window.renderDeckGrid();
-            
-            document.getElementById('view-main').classList.add('hidden');
-            document.getElementById('view-main').style.display = 'none';
-            document.getElementById('view-deck').classList.remove('hidden');
-            document.getElementById('view-deck').style.display = 'flex';
+        window.startInteractiveTutorial = () => {
+            window.tutorialStep = 1;
+            window.updateTutorialUI();
         };
 
-        window.renderDeckGrid = () => {
-            document.getElementById('deck-count').innerText = tempDeck.length;
-            const allStreamers = getStreamersData();
-            const grid = document.getElementById('deck-grid');
+        window.updateTutorialUI = () => {
+            document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+            const msgBox = document.getElementById('global-tutorial-msg');
             
-            grid.innerHTML = allStreamers.map(s => {
-                const isOwned = userData.ownedCards[s.id];
-                const isSelected = tempDeck.includes(s.id);
-                const isOnePick = userData.onePick === s.id;
-                
-                let classes = "relative flex flex-col items-center justify-center p-2 rounded-xl transition-all ";
-                if (!isOwned) {
-                    classes += "bg-slate-200 opacity-50 grayscale cursor-not-allowed";
-                } else if (isSelected) {
-                    classes += "bg-sky-100 border-2 border-blue-500 shadow-md cursor-pointer";
-                } else {
-                    classes += "bg-white border-2 border-slate-200 cursor-pointer";
-                }
-                
-                const imgSrc = s.imgs && s.imgs.length > 0 ? s.imgs[0] : '';
-                const fb = `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=0f172a&color=38bdf8`;
-
-                return `
-                    <div class="${classes}" onclick="window.toggleDeckCard('${s.id}', ${isOwned}, ${isOnePick})">
-                        <img src="${imgSrc}" onerror="this.onerror=null; this.src='${fb}';" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover mb-1 border border-slate-300">
-                        <span class="text-[0.6rem] sm:text-[0.65rem] font-bold text-center truncate w-full text-slate-800">${s.name}</span>
-                        ${isSelected ? '<div class="absolute -top-1 -right-1 bg-blue-500 text-white text-[0.6rem] w-4 h-4 flex items-center justify-center rounded-full font-black shadow-sm">✓</div>' : ''}
-                        ${isOnePick ? '<div class="absolute -top-1 -left-1 text-[0.8rem] drop-shadow-sm">🌟</div>' : ''}
-                    </div>
-                `;
-            }).join('');
-        };
-
-        window.toggleDeckCard = (id, isOwned, isOnePick) => {
-            if (!isOwned) { sounds.error(); return; }
-            if (isOnePick) {
-                sounds.error();
-                alert("원픽 스트리머는 덱에서 뺄 수 없습니다!");
+            if(window.tutorialStep === 0) {
+                msgBox.classList.add('hidden');
                 return;
             }
-            sounds.select();
-            if (tempDeck.includes(id)) {
-                tempDeck = tempDeck.filter(x => x !== id);
-            } else {
-                if (tempDeck.length >= 24) {
-                    alert("최대 24명까지만 선택 가능합니다.");
-                    return;
-                }
-                tempDeck.push(id);
+
+            msgBox.classList.remove('hidden');
+            let msg = "";
+            let targetId = "";
+
+            switch(window.tutorialStep) {
+                case 1:
+                    msg = "플레이하기 버튼을 눌러 게임을 시작하세요!";
+                    targetId = "btn-play";
+                    break;
+                case 2:
+                    msg = "일반 모드를 선택해 게임 규칙을 익혀봅시다!";
+                    targetId = "btn-mode-normal";
+                    break;
             }
-            window.renderDeckGrid();
-        };
 
-        window.clearDeck = () => {
-            sounds.select();
-            if(userData.onePick) tempDeck = [userData.onePick];
-            else tempDeck = [];
-            window.renderDeckGrid();
-        };
-
-        window.randomDeck = () => {
-            sounds.select();
-            let owned = Object.keys(userData.ownedCards);
-            let pool = owned.filter(id => id !== userData.onePick);
-            pool = shuffleArray(pool);
-            tempDeck = userData.onePick ? [userData.onePick] : [];
-            tempDeck = tempDeck.concat(pool.slice(0, 24 - tempDeck.length));
-            window.renderDeckGrid();
-        };
-
-        window.saveDeck = () => {
-            sounds.select();
-            if (tempDeck.length !== 24) {
-                alert("정확히 24명의 스트리머를 선택해야 저장할 수 있습니다.");
-                return;
+            document.getElementById('global-tutorial-text').innerText = msg;
+            if(targetId) {
+                const el = document.getElementById(targetId);
+                if(el) el.classList.add('tutorial-highlight');
             }
-            userData.customDeck = tempDeck;
-            window.saveUserData();
-            
-            document.getElementById('view-deck').classList.add('hidden');
-            document.getElementById('view-deck').style.display = 'none';
-            window.goMain();
         };
 
         /* =========================================================================
@@ -1763,26 +1494,19 @@
             document.getElementById('overlay-tutorial-clear').style.display = 'none';
 
             if (status === 'clear') {
-                let rewardPacks = (gameMode === 'challenge') ? 10 : 5;
                 if (gameMode === 'challenge') {
                     document.getElementById('clear-score').innerText = `${score} (남은 시간: ${timeLeft}초)`;
-                    
                     if (score > userData.bestScore_challenge) {
                         userData.bestScore_challenge = score;
-                        saveRecordToFirebase();
+                        window.saveUserData();
                     }
                 } else {
                     document.getElementById('clear-score').innerText = `${score} (클리어: ${timeElapsed}초)`;
-                    
                     if (timeElapsed < userData.bestTime_normal) {
                         userData.bestTime_normal = timeElapsed;
-                        saveRecordToFirebase();
+                        window.saveUserData();
                     }
                 }
-                
-                document.getElementById('clear-reward-msg').innerText = `카드팩 ${rewardPacks}개 획득!`;
-                userData.packs += rewardPacks;
-                window.saveUserData();
                 
                 document.getElementById('overlay-clear').classList.remove('hidden');
                 document.getElementById('overlay-clear').style.display = 'flex';
@@ -1841,12 +1565,6 @@
             document.getElementById('view-game').style.display = 'none';
             document.getElementById('view-loading').classList.add('hidden');
             document.getElementById('view-loading').style.display = 'none';
-            document.getElementById('view-inventory').classList.add('hidden');
-            document.getElementById('view-inventory').style.display = 'none';
-            document.getElementById('view-deck').classList.add('hidden');
-            document.getElementById('view-deck').style.display = 'none';
-            document.getElementById('view-pack-open').classList.add('hidden');
-            document.getElementById('view-pack-open').style.display = 'none';
 
             if (view === 'main') {
                 document.getElementById('view-main').classList.remove('hidden');
@@ -1855,15 +1573,6 @@
             } else if (view === 'loading') {
                 document.getElementById('view-loading').classList.remove('hidden');
                 document.getElementById('view-loading').style.display = 'flex';
-            } else if (view === 'inventory') {
-                document.getElementById('view-inventory').classList.remove('hidden');
-                document.getElementById('view-inventory').style.display = 'flex';
-            } else if (view === 'deck') {
-                document.getElementById('view-deck').classList.remove('hidden');
-                document.getElementById('view-deck').style.display = 'flex';
-            } else if (view === 'pack-open') {
-                document.getElementById('view-pack-open').classList.remove('hidden');
-                document.getElementById('view-pack-open').style.display = 'flex';
             } else {
                 document.getElementById('view-game').classList.remove('hidden');
                 document.getElementById('view-game').style.display = 'flex';
@@ -1883,14 +1592,10 @@
                 if(local) userData = {...userData, ...JSON.parse(local)};
             } catch(e){}
 
-            if (!userData.ownedCards) userData.ownedCards = {};
-            if (!userData.customDeck) userData.customDeck = [];
-            if (typeof userData.packs !== 'number') userData.packs = 0;
-
-            currentOnePick = userData.onePick;
+            currentOnePick = userData.onePick || null;
             window.updateSettingsOnePickUI();
-            
-            if (!localStorage.getItem('soopMatchOnePickSet')) {
+
+            if (!userData.initialized || !localStorage.getItem('soopMatchOnePickSet')) {
                 window.openOnePickModal(true);
             } else {
                 renderApp();
@@ -1898,6 +1603,7 @@
             
             const choFilter = document.getElementById('onepick-cho-filter');
             if (choFilter) {
+                // 마우스 휠 스크롤
                 choFilter.addEventListener('wheel', (e) => {
                     if (e.deltaY !== 0) {
                         e.preventDefault();
@@ -1953,6 +1659,10 @@
                     }
                 }
             });
+            
+            if (userData.initialized) {
+                window.updateTutorialUI(); 
+            }
         };
 
         window.goMain = () => {
@@ -1963,6 +1673,10 @@
         };
 
         window.openModeModal = () => {
+            if(window.tutorialStep === 1) {
+                window.tutorialStep = 2;
+                window.updateTutorialUI();
+            }
             document.getElementById('modal-mode').classList.remove('hidden');
             document.getElementById('modal-mode').style.display = 'flex';
         };
@@ -1981,16 +1695,17 @@
             sounds.select();
             gameMode = mode;
             window.toggleModeModal(false);
-            window.startGame();
+            
+            if(window.tutorialStep === 2) {
+                window.tutorialStep = 0; 
+                window.updateTutorialUI();
+                window.startTutorial(); 
+            } else {
+                window.startGame();
+            }
         };
 
         window.startGame = async () => {
-            if (userData.customDeck.length !== 24) {
-                alert("나만의 덱에서 정확히 24명의 스트리머를 선택해야 플레이할 수 있습니다.");
-                window.openDeckView();
-                return;
-            }
-
             let newBoard = generateTiles();
             let retry = 50; 
             while (countTiles(newBoard) > 0 && countMatchablePairs(newBoard) === 0 && retry > 0) {
@@ -2040,19 +1755,21 @@
             window.initAudio(); 
             sounds.select();
             
-            let seen = false;
-            try { seen = localStorage.getItem('soopMatchTutorialSeen') === 'true'; } catch(e) {}
-            if (!seen) window.startTutorial();
-            else window.openModeModal();
-        };
-
-        window.finishTutorial = () => {
-            sounds.select();
-            try { localStorage.setItem('soopMatchTutorialSeen', 'true'); } catch(e) {}
-            status = 'idle'; 
-            renderOverlays();
+            if(window.tutorialStep === 1) {
+                window.updateTutorialUI();
+                window.openModeModal();
+                return;
+            }
+            
             window.openModeModal();
         };
+
+        window.finishInGameTutorial = () => {
+            sounds.select();
+            status = 'idle'; 
+            renderOverlays();
+            window.goMain();
+        }
 
         window.toggleSettings = (show) => {
             window.initAudio();
@@ -2077,10 +1794,20 @@
             }
         };
 
-        window.resetTutorial = () => {
+        window.resetData = () => {
             sounds.select();
-            try { localStorage.removeItem('soopMatchTutorialSeen'); } catch(e) {}
-            alert('튜토리얼 기록이 초기화되었습니다. 플레이하기를 누르면 튜토리얼이 나타납니다.');
+            if (confirm("모든 설정과 기록이 초기화됩니다. 계속하시겠습니까?")) {
+                localStorage.removeItem('soopMatchUserData');
+                localStorage.removeItem('soopMatchOnePickSet');
+                
+                if (currentUser && !currentUser.isAnonymous) {
+                    set(ref(db, 'users/' + currentUser.uid + '/soopMatch'), null).then(() => {
+                        location.reload();
+                    }).catch(() => location.reload());
+                } else {
+                    location.reload();
+                }
+            }
         };
 
         window.handleManualShuffle = () => {
