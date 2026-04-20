@@ -365,13 +365,13 @@
 
                     <!-- 공유 및 코드 입력 영역 -->
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-3 border-t border-slate-100 mt-1">
-                        <button onclick="window.copyPickCode(this)" class="shrink-0 px-4 py-2 bg-[#eff6ff] hover:bg-blue-100 text-blue-600 text-xs sm:text-sm font-bold rounded-xl border border-blue-200 transition-colors flex items-center justify-center gap-1.5 min-w-[140px]">
+                        <button onclick="window.copyPickCode()" class="shrink-0 px-4 py-2 bg-[#eff6ff] hover:bg-blue-100 text-blue-600 text-xs sm:text-sm font-bold rounded-xl border border-blue-200 transition-colors flex items-center justify-center gap-1.5 min-w-[140px]">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                            짧은 조합 코드 복사
+                            조합 코드 복사
                         </button>
                         <div class="flex-1 flex relative">
-                            <input type="text" id="pick-code-input" placeholder="공유받은 짧은 코드 붙여넣기" class="w-full uppercase tracking-widest pl-4 pr-16 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-all font-bold placeholder:tracking-normal placeholder:font-normal">
-                            <button onclick="window.applyPickCode(this)" class="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-slate-800 text-white text-xs font-bold rounded-lg hover:bg-slate-700 transition-colors flex items-center justify-center">적용</button>
+                            <input type="text" id="pick-code-input" placeholder="공유받은 코드 붙여넣기" class="w-full pl-3 pr-14 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-all">
+                            <button onclick="window.applyPickCode()" class="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-slate-800 text-white text-xs font-bold rounded-lg hover:bg-slate-700 transition-colors flex items-center justify-center">적용</button>
                         </div>
                     </div>
                 </div>
@@ -394,7 +394,7 @@
                                 <button onclick="window.toggleGroupSection()" class="text-xs font-bold text-slate-500 hover:text-slate-800 bg-slate-200 hover:bg-slate-300 px-2.5 py-1 rounded transition-colors">닫기 ✕</button>
                             </div>
                             <div class="p-3 max-h-[40vh] overflow-y-auto">
-                                <div id="group-checkboxes-container" class="grid grid-cols-6 lg:grid-cols-8 gap-2.5">
+                                <div id="group-checkboxes-container" class="flex flex-wrap gap-2 sm:gap-2.5">
                                     <!-- JS 동적 생성 -->
                                 </div>
                             </div>
@@ -911,13 +911,13 @@
                 modalInner.className = "flex-1 overflow-y-auto p-4 flex flex-col gap-4 max-w-5xl mx-auto w-full";
                 selectedContainer.className = "grid grid-cols-12 grid-rows-2 gap-y-3 gap-x-2 w-full";
                 listContainer.className = "grid grid-cols-8 lg:grid-cols-10 gap-3 content-start";
-                groupContainer.className = "grid grid-cols-4 sm:grid-cols-6 gap-2.5";
+                groupContainer.className = "flex flex-wrap gap-2 sm:gap-2.5";
                 groupPopup.className = "absolute top-full right-0 mt-2 w-[480px] max-w-xl bg-white border border-slate-300 rounded-2xl shadow-2xl hidden flex-col z-50 overflow-hidden";
             } else {
                 modalInner.className = "flex-1 overflow-y-auto p-2 flex flex-col gap-3 max-w-md mx-auto w-full";
                 selectedContainer.className = "grid grid-cols-6 grid-rows-4 gap-y-2 gap-x-1 w-full";
                 listContainer.className = "grid grid-cols-4 sm:grid-cols-5 gap-2 content-start";
-                groupContainer.className = "grid grid-cols-2 sm:grid-cols-3 gap-2";
+                groupContainer.className = "flex flex-wrap gap-1.5 sm:gap-2";
                 groupPopup.className = "absolute top-full left-0 right-0 mt-2 w-full bg-white border border-slate-300 rounded-2xl shadow-2xl hidden flex-col z-50 overflow-hidden";
             }
         };
@@ -1145,11 +1145,11 @@
         window.renderGroupCheckboxes = () => {
             const container = document.getElementById('group-checkboxes-container');
             container.innerHTML = availableGroups.map(g => `
-                <label class="cursor-pointer">
+                <label class="cursor-pointer inline-flex">
                     <input type="checkbox" value="${g}" class="hidden group-filter-checkbox-input" 
                            ${customFilterState.groups.includes(g) ? 'checked' : ''} 
                            onchange="window.updateGroupFilterSelection()">
-                    <div class="px-2 py-1.5 rounded-lg border border-slate-200 text-xs sm:text-sm font-medium text-slate-600 bg-white transition-colors hover:bg-slate-50 select-none text-center truncate">
+                    <div class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs sm:text-sm font-medium text-slate-600 bg-white transition-colors hover:bg-slate-50 select-none flex items-center justify-center whitespace-nowrap">
                         ${g}
                     </div>
                 </label>
@@ -1212,86 +1212,128 @@
         };
 
         /* =========================================================================
-           [3-B] 공유 코드 복사 & 적용 기능 (클라우드 DB & 6자리 짧은 코드)
+           [3-B] 공유 코드 복사 & 적용 기능 (서버리스 델타 압축 알고리즘)
            ========================================================================= */
-        window.copyPickCode = async (btn) => {
+        window.copyPickCode = () => {
             sounds.select();
             if (tempPicks.length === 0) {
                 window.showToast("선택된 멤버가 없습니다.", true);
                 return;
             }
             
-            const originalText = btn.innerHTML;
-            btn.innerHTML = `<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> 생성 중...`;
-            btn.disabled = true;
-
-            // 혼동하기 쉬운 문자(0,O,I,1,l)를 제외한 안전한 문자셋으로 6자리 코드 생성
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; 
-            let shortCode = '';
-            for(let i=0; i<6; i++) shortCode += chars.charAt(Math.floor(Math.random() * chars.length));
+            let isStandard = tempPicks.every(id => /^s\d+$/.test(String(id)));
+            let code = "";
             
-            try {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'sharedPicks', shortCode);
-                await setDoc(docRef, {
-                    picks: tempPicks,
-                    createdAt: Date.now()
-                });
+            if (isStandard) {
+                // 숫자만 추출하여 오름차순 정렬 (델타 인코딩 최적화)
+                let nums = tempPicks.map(id => parseInt(String(id).replace('s', ''), 10)).sort((a,b) => a - b);
+                let deltas = [];
+                let prev = 0;
+                for(let n of nums) {
+                    deltas.push(n - prev);
+                    prev = n;
+                }
                 
-                // 클립보드 복사 트릭
-                const textArea = document.createElement("textarea");
-                textArea.value = shortCode;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
+                // 숫자를 Base62(0-9A-Z는 진행, a-z는 종결) 형태로 변환하여 초압축
+                const encodeNum = (n) => {
+                    if (n < 26) return String.fromCharCode(97 + n); // a-z
+                    const cont = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                    let res = '';
+                    while (n >= 26) {
+                        res += cont[n % 36];
+                        n = Math.floor(n / 36);
+                    }
+                    res += String.fromCharCode(97 + n);
+                    return res;
+                };
                 
-                window.showToast(`코드 [${shortCode}] 복사 완료!`);
-            } catch (e) {
-                console.error(e);
-                window.showToast("코드 생성 중 오류가 발생했습니다.", true);
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+                code = deltas.map(encodeNum).join('');
+            } else {
+                // 비표준 ID 대응 범용 Base64 압축
+                code = 'X' + btoa(tempPicks.join(',')).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
             }
+
+            // 클립보드 복사
+            const textArea = document.createElement("textarea");
+            textArea.value = code;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                window.showToast("조합 코드가 복사되었습니다!");
+            } catch (err) {
+                window.showToast("복사에 실패했습니다.", true);
+            }
+            document.body.removeChild(textArea);
         };
 
-        window.applyPickCode = async (btn) => {
+        window.applyPickCode = () => {
             sounds.select();
             const input = document.getElementById('pick-code-input');
-            const code = input.value.trim().toUpperCase();
+            const code = input.value.trim();
             
-            if (!code || code.length !== 6) {
-                window.showToast("6자리 코드를 입력해주세요.", true);
+            if (!code) {
+                window.showToast("공유받은 코드를 입력해주세요.", true);
                 return;
             }
             
-            const originalText = btn.innerText;
-            btn.innerText = "확인중";
-            btn.disabled = true;
-
             try {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'sharedPicks', code);
-                const snap = await getDoc(docRef);
-                
-                if (snap.exists()) {
-                    const data = snap.data();
-                    if (data.picks && Array.isArray(data.picks)) {
-                        tempPicks = data.picks;
-                        window.updateCustomPickUI();
-                        window.showToast(`${tempPicks.length}명의 조합을 불러왔습니다!`);
-                        input.value = '';
-                    } else {
-                        window.showToast("유효하지 않은 데이터입니다.", true);
-                    }
+                let ids = [];
+                if (code.startsWith('X')) {
+                    // 비표준 구버전 Base64 디코딩
+                    let b64 = code.slice(1).replace(/-/g, '+').replace(/_/g, '/');
+                    while(b64.length % 4) b64 += '=';
+                    ids = atob(b64).split(',');
+                } else if (!code.includes('-') && !code.includes('_') && /^[a-zA-Z0-9]+$/.test(code)) {
+                    // 서버리스 델타 압축 코드 디코딩
+                    const decodeNums = (str) => {
+                        const cont = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                        let nums = [];
+                        let current = 0;
+                        let multiplier = 1;
+                        let prev = 0;
+                        for (let i = 0; i < str.length; i++) {
+                            const char = str[i];
+                            if (char >= 'a' && char <= 'z') {
+                                current += (char.charCodeAt(0) - 97) * multiplier;
+                                prev += current; 
+                                nums.push(prev);
+                                current = 0;
+                                multiplier = 1;
+                            } else {
+                                let val = cont.indexOf(char);
+                                if (val === -1) throw new Error("Invalid character");
+                                current += val * multiplier;
+                                multiplier *= 36;
+                            }
+                        }
+                        return nums;
+                    };
+                    
+                    let nums = decodeNums(code);
+                    ids = nums.map(n => 's' + n);
                 } else {
-                    window.showToast("존재하지 않거나 만료된 코드입니다.", true);
+                    // 아주 예전 Base64 호환성
+                    let b64 = code.replace(/-/g, '+').replace(/_/g, '/');
+                    while(b64.length % 4) b64 += '=';
+                    ids = atob(b64).split(',');
+                }
+                
+                const data = getStreamersData();
+                let validIds = ids.filter(id => data.some(s => String(s.id) === String(id)));
+                
+                validIds = [...new Set(validIds)].slice(0, UNIQUE_TILES);
+                
+                if (validIds.length > 0) {
+                    tempPicks = validIds;
+                    window.updateCustomPickUI();
+                    window.showToast(`${validIds.length}명의 조합을 불러왔습니다!`);
+                    input.value = '';
+                } else {
+                    window.showToast("유효한 코드가 아닙니다.", true);
                 }
             } catch (e) {
-                console.error(e);
-                window.showToast("코드를 불러오는 중 오류가 발생했습니다.", true);
-            } finally {
-                btn.innerText = originalText;
-                btn.disabled = false;
+                window.showToast("잘못된 형식의 코드입니다.", true);
             }
         };
 
