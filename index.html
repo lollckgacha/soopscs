@@ -73,6 +73,19 @@
             color: #2563eb;
             font-weight: 700;
         }
+
+        /* 튜토리얼 하이라이트 효과 */
+        .tutorial-highlight {
+            position: relative;
+            z-index: 100 !important;
+            box-shadow: 0 0 0 4px #fbbf24, 0 0 20px rgba(251, 191, 36, 0.8) !important;
+            animation: pulse-ring 1.5s infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans fixed inset-0 w-full h-[100dvh]">
@@ -82,6 +95,12 @@
 
     <!-- 토스트 알림 컨테이너 -->
     <div id="toast-container" class="fixed top-10 left-1/2 transform -translate-x-1/2 z-[200] flex flex-col gap-2 pointer-events-none w-full max-w-sm items-center px-4"></div>
+
+    <!-- 튜토리얼 글로벌 메시지 오버레이 -->
+    <div id="global-tutorial-msg" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-blue-600/95 backdrop-blur-md text-white px-6 py-4 rounded-full shadow-2xl font-black z-[200] flex items-center gap-3 hidden text-sm sm:text-base border-2 border-blue-400 w-11/12 max-w-lg justify-center text-center transition-all">
+        <span class="animate-bounce text-xl">👉</span>
+        <span id="global-tutorial-text">튜토리얼 메시지</span>
+    </div>
 
     <div id="app" class="w-full h-full flex flex-col items-center justify-center p-2 sm:p-4 relative">
         
@@ -130,20 +149,27 @@
                     </button>
 
                     <!-- 부가 기능 버튼 -->
-                    <div class="flex gap-2 w-full">
-                        <button onclick="window.openCustomPickModal()" class="flex flex-col flex-1 py-2.5 bg-[#6366f1] hover:bg-indigo-500 text-white rounded-xl shadow-md transition-all active:scale-95 items-center justify-center gap-0.5 relative overflow-hidden">
+                    <div class="grid grid-cols-3 gap-2 w-full">
+                        <button onclick="window.startInteractiveTutorial()" class="flex flex-col py-2.5 bg-[#f59e0b] hover:bg-amber-500 text-white rounded-xl shadow-md transition-all active:scale-95 items-center justify-center gap-0.5 relative overflow-hidden">
+                            <div class="flex items-center gap-1.5 font-bold text-sm sm:text-base">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                튜토리얼
+                            </div>
+                            <span class="text-[10px] text-amber-100 font-bold tracking-wide truncate px-1">게임 방법</span>
+                        </button>
+                        <button onclick="window.openCustomPickModal()" class="flex flex-col py-2.5 bg-[#6366f1] hover:bg-indigo-500 text-white rounded-xl shadow-md transition-all active:scale-95 items-center justify-center gap-0.5 relative overflow-hidden">
                             <div class="flex items-center gap-1.5 font-bold text-sm sm:text-base">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                                멤버 선택
+                                멤버
                             </div>
-                            <span id="main-custom-pick-status" class="text-[10px] text-yellow-300 font-bold tracking-wide">전체 사용</span>
+                            <span id="main-custom-pick-status" class="text-[10px] text-yellow-300 font-bold tracking-wide truncate px-1 w-full text-center">전체 사용</span>
                         </button>
-                        <button onclick="window.toggleSettings(true)" class="flex flex-col flex-1 py-2.5 bg-[#1e293b] hover:bg-slate-800 text-white rounded-xl shadow-md transition-all active:scale-95 items-center justify-center gap-0.5">
+                        <button onclick="window.toggleSettings(true)" class="flex flex-col py-2.5 bg-[#1e293b] hover:bg-slate-800 text-white rounded-xl shadow-md transition-all active:scale-95 items-center justify-center gap-0.5">
                             <div class="flex items-center gap-1.5 font-bold text-sm sm:text-base">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                                 설정
                             </div>
-                            <span class="text-[10px] text-slate-300 font-normal tracking-wide">볼륨 및 데이터</span>
+                            <span class="text-[10px] text-slate-300 font-normal tracking-wide">볼륨/데이터</span>
                         </button>
                     </div>
                     
@@ -240,6 +266,10 @@
                         🌿 경과 시간: <span id="normal-time-val" class="text-blue-500 font-black">0</span>초
                     </div>
                 </div>
+
+                <div id="tutorial-message" class="w-full text-center hidden mb-2">
+                    <span id="tutorial-text" class="text-sky-600 font-bold text-xs sm:text-sm bg-sky-100/80 px-4 py-1.5 rounded-full shadow-sm backdrop-blur-sm animate-pulse border border-sky-200">직선으로 이어진 똑같은 타일을 클릭해 맞춰보세요!</span>
+                </div>
             </div>
 
             <!-- Game Board Area -->
@@ -262,6 +292,15 @@
                 </div>
                 
                 <!-- 게임 오버레이 팝업들 -->
+                <div id="overlay-tutorial-clear" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-sm flex-col items-center justify-center rounded-xl border-4 border-sky-400 hidden">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-16 h-16 text-blue-500 mb-4 animate-bounce"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>
+                    <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-4">튜토리얼 완료!</h2>
+                    <button onclick="window.finishInGameTutorial()" class="flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-lg sm:text-xl shadow-xl transition-all hover:-translate-y-1 active:scale-95">
+                        <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" class="w-6 h-6"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        메인으로 돌아가기
+                    </button>
+                </div>
+
                 <div id="overlay-clear" class="absolute inset-0 z-[60] bg-white/90 backdrop-blur-sm flex-col items-center justify-center rounded-xl border-4 border-sky-400 hidden">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-16 h-16 text-blue-500 mb-4 animate-bounce"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>
                     <h2 class="text-4xl font-black text-slate-900 mb-2">게임 클리어!</h2>
@@ -370,7 +409,7 @@
                             조합 코드 복사
                         </button>
                         <div class="flex-1 flex relative">
-                            <input type="text" id="pick-code-input" placeholder="공유받은 코드 붙여넣기" class="w-full pl-3 pr-14 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-all">
+                            <input type="text" id="pick-code-input" placeholder="공유받은 코드 붙여넣기" class="w-full uppercase tracking-widest pl-4 pr-16 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-all font-bold placeholder:tracking-normal placeholder:font-normal">
                             <button onclick="window.applyPickCode()" class="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-slate-800 text-white text-xs font-bold rounded-lg hover:bg-slate-700 transition-colors flex items-center justify-center">적용</button>
                         </div>
                     </div>
@@ -384,7 +423,7 @@
                             <svg class="absolute left-3.5 top-3 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </div>
                         <button onclick="window.toggleGroupSection()" class="px-4 bg-[#2563eb] hover:bg-blue-700 text-white rounded-xl shadow-sm transition-colors flex items-center justify-center">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
                         </button>
                         
                         <!-- 펼쳐지는 그룹 필터 팝업 (드롭다운 방식) -->
@@ -490,7 +529,14 @@
         import { getFirestore, doc, setDoc, getDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         /* 드래그 상태 관리 변수 */
-        let isDragging = false;
+        window.isDragging = false;
+        window.tutorialStep = 0;
+        
+        window.userData = { 
+            bestScore_challenge: 0, 
+            bestTime_normal: 999999,
+            customPicks: [] 
+        };
 
         /* =========================================================================
            [0] Web Audio API 기반 효과음 합성 시스템 및 BGM 관리 & Toast UI
@@ -618,7 +664,7 @@
         };
 
         /* =========================================================================
-           [0-B] Firebase 초기화 및 Auth 로직
+           [0-B] Firebase 초기화 및 Auth 로직 
            ========================================================================= */
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         let firebaseConfig;
@@ -639,13 +685,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        let currentUser = null;
-        
-        let userData = { 
-            bestScore_challenge: 0, 
-            bestTime_normal: 999999,
-            customPicks: [] 
-        };
+        let currentUser = null; 
 
         const initAuth = async () => {
             try {
@@ -661,11 +701,11 @@
         initAuth();
 
         window.saveUserData = async function() {
-            localStorage.setItem('soopMatchUserData', JSON.stringify(userData)); 
+            localStorage.setItem('soopMatchUserData', JSON.stringify(window.userData)); 
             if(currentUser) {
                 try {
                     const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'userData', 'matchData');
-                    await setDoc(userRef, userData, { merge: true });
+                    await setDoc(userRef, window.userData, { merge: true });
                 } catch(e) {}
             }
         };
@@ -676,10 +716,19 @@
             const uPHome = document.getElementById('user-profile-home');
             
             if (u && !u.isAnonymous) {
-                bLHome.classList.add('hidden'); uPHome.classList.remove('hidden'); uPHome.classList.add('flex'); 
-                document.getElementById('user-name-home').innerText = "로그인됨";
+                if(bLHome) bLHome.classList.add('hidden'); 
+                if(uPHome) {
+                    uPHome.classList.remove('hidden'); 
+                    uPHome.classList.add('flex'); 
+                }
+                const nameEl = document.getElementById('user-name-home');
+                if(nameEl) nameEl.innerText = "로그인됨";
             } else {
-                bLHome.classList.remove('hidden'); uPHome.classList.add('hidden'); uPHome.classList.remove('flex');
+                if(bLHome) bLHome.classList.remove('hidden'); 
+                if(uPHome) {
+                    uPHome.classList.add('hidden'); 
+                    uPHome.classList.remove('flex');
+                }
             }
 
             if (u) {
@@ -688,11 +737,11 @@
                     const snap = await getDoc(userRef);
                     if (snap.exists()) {
                         const data = snap.data();
-                        if (data.bestScore_challenge) userData.bestScore_challenge = data.bestScore_challenge;
-                        if (data.bestTime_normal) userData.bestTime_normal = data.bestTime_normal;
-                        if (data.customPicks) userData.customPicks = data.customPicks;
+                        if (data.bestScore_challenge) window.userData.bestScore_challenge = data.bestScore_challenge;
+                        if (data.bestTime_normal) window.userData.bestTime_normal = data.bestTime_normal;
+                        if (data.customPicks) window.userData.customPicks = data.customPicks;
                     }
-                    validateCustomPicks();
+                    window.validateCustomPicks();
                     window.updateMainMenuPickStatus();
                 } catch(e) { console.error("Firestore 로드 에러:", e); }
             }
@@ -730,7 +779,7 @@
             ]
         };
 
-        const getStreamersData = () => {
+        window.getStreamersData = () => {
             let data = [];
             try {
                 if (typeof SOOP_DATA !== 'undefined' && SOOP_DATA && SOOP_DATA.streamers) {
@@ -771,7 +820,7 @@
                 };
             });
 
-            if (data.length < UNIQUE_TILES) {
+            if (data.length < 24) {
                 const existingIds = new Set(data.map(d => String(d.id)));
                 FALLBACK_DATA.streamers.forEach(s => {
                     if (!existingIds.has(String(s.id))) data.push({...s, crews: ["무소속"]});
@@ -780,7 +829,7 @@
             return data;
         };
 
-        const getAvailableGroups = () => {
+        window.getAvailableGroups = () => {
             let crews = [];
             try {
                 if (typeof SOOP_DATA !== 'undefined' && SOOP_DATA.achievements) {
@@ -794,7 +843,7 @@
                 return crews.map(c => c.title).sort();
             }
 
-            const data = getStreamersData();
+            const data = window.getStreamersData();
             const groups = new Set();
             data.forEach(s => {
                 if (s.crews) s.crews.forEach(c => groups.add(c));
@@ -832,7 +881,7 @@
         const imageCache = {};
         
         // 커스텀 픽 관련 상태
-        let tempPicks = []; // 모달 열었을 때 임시로 편집하는 리스트
+        window.tempPicks = []; 
         let customFilterState = { search: '', groups: [], page: 1, perPage: 40 };
         let availableGroups = [];
 
@@ -923,9 +972,116 @@
         };
 
         /* =========================================================================
+           [3-C] 튜토리얼 관련 함수 모음
+           ========================================================================= */
+        window.generateTutorialTiles = () => {
+            let streamersData = window.getStreamersData();
+            if (streamersData.length < 3) {
+                streamersData = streamersData.concat(FALLBACK_DATA.streamers);
+            }
+            const pool = streamersData.slice(0, 3);
+            let b;
+            
+            if (layoutMode === 'PC') {
+                b = Array(4).fill(null).map(() => Array(5).fill(null));
+                b[0][1] = { ...pool[0], instanceId: 't1-a' };
+                b[0][3] = { ...pool[0], instanceId: 't1-b' }; 
+                b[2][1] = { ...pool[1], instanceId: 't2-a' };
+                b[3][3] = { ...pool[1], instanceId: 't2-b' }; 
+                b[1][0] = { ...pool[2], instanceId: 't3-a' };
+                b[3][0] = { ...pool[2], instanceId: 't3-b' }; 
+            } else {
+                b = Array(5).fill(null).map(() => Array(4).fill(null));
+                b[1][0] = { ...pool[0], instanceId: 't1-a' };
+                b[3][0] = { ...pool[0], instanceId: 't1-b' }; 
+                b[1][2] = { ...pool[1], instanceId: 't2-a' };
+                b[3][3] = { ...pool[1], instanceId: 't2-b' }; 
+                b[0][1] = { ...pool[2], instanceId: 't3-a' };
+                b[0][3] = { ...pool[2], instanceId: 't3-b' }; 
+            }
+            return b;
+        };
+
+        window.startInteractiveTutorial = () => {
+            window.initAudio();
+            sounds.select();
+            window.tutorialStep = 1;
+            window.updateTutorialUI();
+        };
+
+        window.updateTutorialUI = () => {
+            document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+            const msgBox = document.getElementById('global-tutorial-msg');
+            
+            if(window.tutorialStep === 0) {
+                if(msgBox) msgBox.classList.add('hidden');
+                return;
+            }
+
+            if(msgBox) msgBox.classList.remove('hidden');
+            let msg = "";
+            let targetId = "";
+
+            switch(window.tutorialStep) {
+                case 1:
+                    msg = "플레이하기 버튼을 눌러 게임을 시작하세요!";
+                    targetId = "btn-play";
+                    break;
+                case 2:
+                    msg = "일반 모드를 선택해 게임 규칙을 익혀봅시다!";
+                    targetId = "btn-mode-normal";
+                    break;
+            }
+
+            const msgText = document.getElementById('global-tutorial-text');
+            if(msgText) msgText.innerText = msg;
+            if(targetId) {
+                const el = document.getElementById(targetId);
+                if(el) el.classList.add('tutorial-highlight');
+            }
+        };
+
+        window.updateTutorialMessage = () => {
+            const msgObj = document.getElementById('tutorial-text');
+            if (!msgObj) return;
+            if (matchesLeft === 3) msgObj.innerText = "직선으로 이어진 똑같은 타일을 클릭해 맞춰보세요!";
+            else if (matchesLeft === 2) msgObj.innerText = "한 번 꺾이는 타일도 맞출 수 있습니다!";
+            else if (matchesLeft === 1) msgObj.innerText = "테두리 바깥 빈 공간을 활용하면 두 번 꺾어서 연결 가능합니다!";
+            else msgObj.innerText = "완벽합니다!";
+        };
+
+        window.finishInGameTutorial = () => {
+            sounds.select();
+            status = 'idle'; 
+            window.tutorialStep = 0;
+            window.updateTutorialUI();
+            try { localStorage.setItem('soopMatchTutorialSeen', 'true'); } catch(e) {}
+            renderOverlays();
+            window.goMain();
+        };
+
+        window.startTutorial = async () => {
+            board = window.generateTutorialTiles();
+            selectedTile = null;
+            drawnPath = null;
+            hintTiles = null;
+            combo = 0;
+            matchesLeft = 3;
+            status = 'tutorial';
+            
+            view = 'loading';
+            renderApp();
+
+            await window.preloadImages(board);
+
+            view = 'tutorial';
+            renderApp();
+        };
+
+        /* =========================================================================
            [3] 유틸리티 및 데이터 생성 (고정 픽 + 나머지 랜덤 로직 적용)
            ========================================================================= */
-        const shuffleArray = (array) => {
+        window.shuffleArray = (array) => {
             let newArray = [...array];
             for (let i = newArray.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -934,20 +1090,20 @@
             return newArray;
         };
 
-        const generateTiles = () => {
-            const streamersData = getStreamersData();
+        window.generateTiles = () => {
+            const streamersData = window.getStreamersData();
             let pool = [];
 
             // 1. 가져오기: 사용자가 선택한 고정 멤버
-            if (userData.customPicks && Array.isArray(userData.customPicks) && userData.customPicks.length > 0) {
-                pool = userData.customPicks.map(id => streamersData.find(s => String(s.id) === String(id))).filter(Boolean);
+            if (window.userData.customPicks && Array.isArray(window.userData.customPicks) && window.userData.customPicks.length > 0) {
+                pool = window.userData.customPicks.map(id => streamersData.find(s => String(s.id) === String(id))).filter(Boolean);
             }
             
             // 2. 빈자리 채우기
             if(pool.length < UNIQUE_TILES) {
                 const existingIds = new Set(pool.map(s => String(s.id)));
                 let availableData = streamersData.filter(s => !existingIds.has(String(s.id)));
-                availableData = shuffleArray(availableData);
+                availableData = window.shuffleArray(availableData);
                 
                 const needed = UNIQUE_TILES - pool.length;
                 pool = pool.concat(availableData.slice(0, needed));
@@ -967,7 +1123,7 @@
                 }
             });
 
-            deck = shuffleArray(deck);
+            deck = window.shuffleArray(deck);
             let b = Array(GRID_ROWS).fill(null).map(() => Array(GRID_COLS).fill(null));
             
             let deckIndex = 0;
@@ -979,7 +1135,7 @@
             return b;
         };
 
-        const preloadImages = (boardData) => {
+        window.preloadImages = (boardData) => {
             return new Promise((resolve) => {
                 let isResolved = false;
                 const finish = () => {
@@ -1045,29 +1201,29 @@
         };
 
         // 데이터 무결성 검증 (0명 ~ 최대 24명 유지)
-        const validateCustomPicks = () => {
-            const data = getStreamersData();
-            let validPicks = (userData.customPicks || []).filter(id => data.some(s => String(s.id) === String(id)));
+        window.validateCustomPicks = () => {
+            const data = window.getStreamersData();
+            let validPicks = (window.userData.customPicks || []).filter(id => data.some(s => String(s.id) === String(id)));
             
             if (validPicks.length > UNIQUE_TILES) {
                 validPicks = validPicks.slice(0, UNIQUE_TILES);
             }
-            userData.customPicks = validPicks;
+            window.userData.customPicks = validPicks;
         };
 
         window.updateMainMenuPickStatus = () => {
             const el = document.getElementById('main-custom-pick-status');
             if (el) {
-                const count = userData.customPicks ? userData.customPicks.length : 0;
+                const count = window.userData.customPicks ? window.userData.customPicks.length : 0;
                 if (count === 0) {
                     el.innerText = '전체 사용';
-                    el.className = 'text-[10px] text-yellow-300 font-bold tracking-wide';
+                    el.className = 'text-[10px] text-yellow-300 font-bold tracking-wide truncate px-1 max-w-full';
                 } else if (count === UNIQUE_TILES) {
                     el.innerText = '24명 사용 중';
-                    el.className = 'text-[10px] text-yellow-300 font-bold tracking-wide';
+                    el.className = 'text-[10px] text-yellow-300 font-bold tracking-wide truncate px-1 max-w-full';
                 } else {
-                    el.innerText = `${count}명 고정 (나머지 랜덤)`;
-                    el.className = 'text-[10px] text-indigo-100 font-bold tracking-wide';
+                    el.innerText = `${count}명 고정 (랜덤)`;
+                    el.className = 'text-[10px] text-indigo-100 font-bold tracking-wide truncate px-1 max-w-full';
                 }
             }
         };
@@ -1078,12 +1234,12 @@
         window.openCustomPickModal = () => {
             window.initAudio();
             sounds.select();
-            validateCustomPicks();
-            tempPicks = [...(userData.customPicks || [])];
+            window.validateCustomPicks();
+            window.tempPicks = [...(window.userData.customPicks || [])];
             
             document.getElementById('modal-custom-pick').classList.remove('hidden');
             
-            availableGroups = getAvailableGroups();
+            availableGroups = window.getAvailableGroups();
             if (customFilterState.groups.length === 0) {
                 customFilterState.groups = []; 
             }
@@ -1100,12 +1256,12 @@
         window.closeCustomPickModal = () => {
             sounds.select();
             document.getElementById('modal-custom-pick').classList.add('hidden');
-            tempPicks = [];
+            window.tempPicks = [];
         };
 
         window.saveCustomPicks = () => {
             sounds.select();
-            userData.customPicks = [...tempPicks];
+            window.userData.customPicks = [...window.tempPicks];
             window.saveUserData();
             window.updateMainMenuPickStatus();
             window.closeCustomPickModal();
@@ -1159,37 +1315,37 @@
         window.toggleCustomPick = (id) => {
             if(isDragging) return;
             sounds.select();
-            const idx = tempPicks.findIndex(x => String(x) === String(id));
+            const idx = window.tempPicks.findIndex(x => String(x) === String(id));
             if (idx > -1) {
-                tempPicks.splice(idx, 1);
+                window.tempPicks.splice(idx, 1);
             } else {
-                if (tempPicks.length >= UNIQUE_TILES) {
+                if (window.tempPicks.length >= UNIQUE_TILES) {
                     const headerCount = document.getElementById('custom-pick-count-header');
                     headerCount.classList.add('text-red-500', 'bg-red-50', 'border-red-200');
                     setTimeout(() => headerCount.classList.remove('text-red-500', 'bg-red-50', 'border-red-200'), 300);
                     return;
                 }
-                tempPicks.push(String(id));
+                window.tempPicks.push(String(id));
             }
             window.updateCustomPickUI();
         };
 
         window.clearTempPicks = () => {
             sounds.select();
-            tempPicks = [];
+            window.tempPicks = [];
             window.updateCustomPickUI();
         };
 
         window.fillRandomTempPicks = () => {
             sounds.select();
-            const data = getStreamersData();
-            tempPicks = shuffleArray(data).slice(0, UNIQUE_TILES).map(s => String(s.id));
+            const data = window.getStreamersData();
+            window.tempPicks = window.shuffleArray(data).slice(0, UNIQUE_TILES).map(s => String(s.id));
             window.updateCustomPickUI();
         };
         
         window.addAllFilteredToTemp = () => {
             sounds.select();
-            const data = getStreamersData();
+            const data = window.getStreamersData();
             const lowerFilter = customFilterState.search.toLowerCase();
             
             const filtered = data.filter(s => {
@@ -1202,9 +1358,9 @@
 
             let added = false;
             for (const s of filtered) {
-                if (tempPicks.length >= UNIQUE_TILES) break;
-                if (!tempPicks.includes(String(s.id))) {
-                    tempPicks.push(String(s.id));
+                if (window.tempPicks.length >= UNIQUE_TILES) break;
+                if (!window.tempPicks.includes(String(s.id))) {
+                    window.tempPicks.push(String(s.id));
                     added = true;
                 }
             }
@@ -1216,17 +1372,17 @@
            ========================================================================= */
         window.copyPickCode = () => {
             sounds.select();
-            if (tempPicks.length === 0) {
+            if (window.tempPicks.length === 0) {
                 window.showToast("선택된 멤버가 없습니다.", true);
                 return;
             }
             
-            let isStandard = tempPicks.every(id => /^s\d+$/.test(String(id)));
+            let isStandard = window.tempPicks.every(id => /^s\d+$/.test(String(id)));
             let code = "";
             
             if (isStandard) {
                 // 숫자만 추출하여 오름차순 정렬 (델타 인코딩 최적화)
-                let nums = tempPicks.map(id => parseInt(String(id).replace('s', ''), 10)).sort((a,b) => a - b);
+                let nums = window.tempPicks.map(id => parseInt(String(id).replace('s', ''), 10)).sort((a,b) => a - b);
                 let deltas = [];
                 let prev = 0;
                 for(let n of nums) {
@@ -1250,7 +1406,7 @@
                 code = deltas.map(encodeNum).join('');
             } else {
                 // 비표준 ID 대응 범용 Base64 압축
-                code = 'X' + btoa(tempPicks.join(',')).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+                code = 'X' + btoa(window.tempPicks.join(',')).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
             }
 
             // 클립보드 복사
@@ -1319,13 +1475,13 @@
                     ids = atob(b64).split(',');
                 }
                 
-                const data = getStreamersData();
+                const data = window.getStreamersData();
                 let validIds = ids.filter(id => data.some(s => String(s.id) === String(id)));
                 
                 validIds = [...new Set(validIds)].slice(0, UNIQUE_TILES);
                 
                 if (validIds.length > 0) {
-                    tempPicks = validIds;
+                    window.tempPicks = validIds;
                     window.updateCustomPickUI();
                     window.showToast(`${validIds.length}명의 조합을 불러왔습니다!`);
                     input.value = '';
@@ -1339,7 +1495,7 @@
 
         // 전체 UI 업데이트
         window.updateCustomPickUI = () => {
-            const count = tempPicks.length;
+            const count = window.tempPicks.length;
             const headerCount = document.getElementById('custom-pick-count-header');
             
             if (count === 0) {
@@ -1359,11 +1515,11 @@
         // 선택된 멤버 렌더링 (PC/Mobile 분기에 따른 CSS 클래스 적용)
         window.renderSelectedMembers = () => {
             const container = document.getElementById('selected-members-container');
-            const data = getStreamersData();
+            const data = window.getStreamersData();
             
             const colSpan = layoutMode === 'PC' ? 'col-span-12 row-span-2' : 'col-span-6 row-span-4';
             
-            if (tempPicks.length === 0) {
+            if (window.tempPicks.length === 0) {
                 container.innerHTML = `
                     <div class="${colSpan} py-8 text-center text-slate-400 font-bold text-sm bg-slate-50 rounded-xl border border-slate-100/50 w-full flex flex-col items-center justify-center">
                         <span class="text-xl mb-1">🎲</span>
@@ -1378,8 +1534,8 @@
 
             let html = '';
             for(let i=0; i<UNIQUE_TILES; i++) {
-                if (i < tempPicks.length) {
-                    const id = tempPicks[i];
+                if (i < window.tempPicks.length) {
+                    const id = window.tempPicks[i];
                     const s = data.find(x => String(x.id) === String(id));
                     if (s) {
                         const imgSrc = s.imgs && s.imgs.length > 0 ? s.imgs[0] : '';
@@ -1411,7 +1567,7 @@
             const listContainer = document.getElementById('custom-list');
             const pageContainer = document.getElementById('custom-pagination');
             
-            const data = getStreamersData();
+            const data = window.getStreamersData();
             const lowerFilter = customFilterState.search.toLowerCase();
             
             const filtered = data.filter(s => {
@@ -1455,7 +1611,7 @@
             const textSize = layoutMode === 'PC' ? 'text-[0.7rem] sm:text-xs' : 'text-[0.65rem]';
 
             pageData.forEach(s => {
-                const isSelected = tempPicks.includes(String(s.id));
+                const isSelected = window.tempPicks.includes(String(s.id));
                 const div = document.createElement('div');
                 div.className = `relative flex flex-col items-center p-2 rounded-xl cursor-pointer transition-all active:scale-95 border-2 bg-white ${isSelected ? 'border-[#3b82f6] shadow-sm shadow-blue-500/20' : 'border-transparent hover:bg-slate-50 shadow-sm'}`;
                 div.onclick = () => window.toggleCustomPick(s.id);
@@ -1621,7 +1777,7 @@
             return count;
         };
 
-        const shuffleRemainingTiles = (b) => {
+        window.shuffleRemainingTiles = (b) => {
             const gRows = b.length;
             const gCols = b[0].length;
             let remaining = [];
@@ -1636,7 +1792,7 @@
                 }
             }
 
-            remaining = shuffleArray(remaining);
+            remaining = window.shuffleArray(remaining);
             let newBoard = Array(gRows).fill(null).map(() => Array(gCols).fill(null));
             
             positions.forEach((pos, index) => {
@@ -1757,23 +1913,7 @@
         /* =========================================================================
            [5] 화면 렌더링 및 동적 픽셀 스케일링 로직
            ========================================================================= */
-        window.updateTimerUI = () => {
-            if (gameMode === 'challenge') {
-                document.getElementById('timer-text').innerText = `${timeLeft}초`;
-                const percent = (timeLeft / 60) * 100; 
-                const bar = document.getElementById('timer-bar');
-                bar.style.width = `${percent}%`;
-                
-                bar.className = 'h-full transition-all duration-1000 ease-linear ' + 
-                                (timeLeft <= 10 ? 'bg-gradient-to-r from-red-600 to-orange-500' : 
-                                 timeLeft <= 20 ? 'bg-gradient-to-r from-orange-500 to-yellow-400' : 
-                                 'bg-gradient-to-r from-sky-400 to-blue-500');
-            } else {
-                document.getElementById('normal-time-val').innerText = timeElapsed;
-            }
-        };
-
-        const startTimer = () => {
+        window.startTimer = () => {
             if (timerInterval) clearInterval(timerInterval);
             
             timerInterval = setInterval(() => {
@@ -1793,8 +1933,24 @@
             }, 1000);
         };
 
-        const stopTimer = () => {
+        window.stopTimer = () => {
             if (timerInterval) clearInterval(timerInterval);
+        };
+
+        window.updateTimerUI = () => {
+            if (gameMode === 'challenge') {
+                document.getElementById('timer-text').innerText = `${timeLeft}초`;
+                const percent = (timeLeft / 60) * 100; 
+                const bar = document.getElementById('timer-bar');
+                bar.style.width = `${percent}%`;
+                
+                bar.className = 'h-full transition-all duration-1000 ease-linear ' + 
+                                (timeLeft <= 10 ? 'bg-gradient-to-r from-red-600 to-orange-500' : 
+                                 timeLeft <= 20 ? 'bg-gradient-to-r from-orange-500 to-yellow-400' : 
+                                 'bg-gradient-to-r from-sky-400 to-blue-500');
+            } else {
+                document.getElementById('normal-time-val').innerText = timeElapsed;
+            }
         };
 
         const createTextFallback = (name) => {
@@ -1805,7 +1961,7 @@
         };
 
         const resizeBoard = () => {
-            if (!board || board.length === 0 || view !== 'playing') return;
+            if (!board || board.length === 0 || (view !== 'playing' && view !== 'tutorial')) return;
             
             const outer = document.getElementById('board-outer');
             const aspectContainer = document.getElementById('board-aspect-container');
@@ -1941,7 +2097,7 @@
         };
 
         const updateMatchableCountUI = () => {
-            if (status === 'playing') {
+            if (status === 'playing' || status === 'tutorial') {
                 const pairsCount = countMatchablePairs(board);
                 document.getElementById('matchable-count').innerText = pairsCount;
             }
@@ -1952,6 +2108,8 @@
             document.getElementById('overlay-clear').style.display = 'none';
             document.getElementById('overlay-gameover').classList.add('hidden');
             document.getElementById('overlay-gameover').style.display = 'none';
+            document.getElementById('overlay-tutorial-clear').classList.add('hidden');
+            document.getElementById('overlay-tutorial-clear').style.display = 'none';
             
             const shufflingOverlay = document.getElementById('overlay-shuffling');
             if (shufflingOverlay) {
@@ -1962,14 +2120,14 @@
             if (status === 'clear') {
                 if (gameMode === 'challenge') {
                     document.getElementById('clear-score').innerText = `${score} (남은 시간: ${timeLeft}초)`;
-                    if (score > userData.bestScore_challenge) {
-                        userData.bestScore_challenge = score;
+                    if (score > window.userData.bestScore_challenge) {
+                        window.userData.bestScore_challenge = score;
                         window.saveUserData();
                     }
                 } else {
                     document.getElementById('clear-score').innerText = `${score} (클리어: ${timeElapsed}초)`;
-                    if (timeElapsed < userData.bestTime_normal) {
-                        userData.bestTime_normal = timeElapsed;
+                    if (timeElapsed < window.userData.bestTime_normal) {
+                        window.userData.bestTime_normal = timeElapsed;
                         window.saveUserData();
                     }
                 }
@@ -1981,25 +2139,45 @@
                 document.getElementById('gameover-score').innerText = score;
                 document.getElementById('overlay-gameover').classList.remove('hidden');
                 document.getElementById('overlay-gameover').style.display = 'flex';
+            } else if (status === 'tutorial_clear') {
+                document.getElementById('overlay-tutorial-clear').classList.remove('hidden');
+                document.getElementById('overlay-tutorial-clear').style.display = 'flex';
             }
         };
 
         window.updateHeader = () => {
-            document.getElementById('score-container').classList.remove('hidden');
-            document.getElementById('btn-shuffle').classList.remove('hidden');
-            document.getElementById('btn-hint').classList.remove('hidden');
-            document.getElementById('game-timer').classList.remove('hidden');
-            
-            document.getElementById('header-score').innerText = score;
+            const isTutorial = view === 'tutorial';
 
-            if (gameMode === 'challenge') {
-                document.getElementById('timer-bar-container').classList.remove('hidden');
+            if (isTutorial) {
+                document.getElementById('score-container').classList.add('hidden');
+                document.getElementById('btn-shuffle').classList.add('hidden');
+                document.getElementById('btn-hint').classList.add('hidden');
+                document.getElementById('game-timer').classList.add('hidden');
                 document.getElementById('normal-timer-text').classList.add('hidden');
-                window.updateTimerUI();
+                
+                const tutMsg = document.getElementById('tutorial-message');
+                if(tutMsg) tutMsg.classList.remove('hidden');
+                window.updateTutorialMessage();
             } else {
-                document.getElementById('timer-bar-container').classList.add('hidden');
-                document.getElementById('normal-timer-text').classList.remove('hidden');
-                window.updateTimerUI();
+                document.getElementById('score-container').classList.remove('hidden');
+                document.getElementById('btn-shuffle').classList.remove('hidden');
+                document.getElementById('btn-hint').classList.remove('hidden');
+                document.getElementById('game-timer').classList.remove('hidden');
+                
+                const tutMsg = document.getElementById('tutorial-message');
+                if(tutMsg) tutMsg.classList.add('hidden');
+                
+                document.getElementById('header-score').innerText = score;
+
+                if (gameMode === 'challenge') {
+                    document.getElementById('timer-bar-container').classList.remove('hidden');
+                    document.getElementById('normal-timer-text').classList.add('hidden');
+                    window.updateTimerUI();
+                } else {
+                    document.getElementById('timer-bar-container').classList.add('hidden');
+                    document.getElementById('normal-timer-text').classList.remove('hidden');
+                    window.updateTimerUI();
+                }
             }
             
             updateMatchableCountUI(); 
@@ -2019,7 +2197,7 @@
             if (view === 'main') {
                 document.getElementById('view-main').classList.remove('hidden');
                 document.getElementById('view-main').style.display = 'flex';
-                stopTimer();
+                window.stopTimer();
             } else if (view === 'loading') {
                 document.getElementById('view-loading').classList.remove('hidden');
                 document.getElementById('view-loading').style.display = 'flex';
@@ -2040,7 +2218,7 @@
         const initOnLoad = () => {
             try {
                 let local = localStorage.getItem('soopMatchUserData');
-                if(local) userData = {...userData, ...JSON.parse(local)};
+                if(local) window.userData = {...window.userData, ...JSON.parse(local)};
             } catch(e){}
 
             let savedMapSize = localStorage.getItem('soopMatchBoardScale');
@@ -2048,7 +2226,7 @@
             window.updateSettingsMapSizeUI();
             window.toggleLayoutMode(layoutMode);
 
-            validateCustomPicks();
+            window.validateCustomPicks();
             window.updateMainMenuPickStatus();
 
             renderApp();
@@ -2065,6 +2243,13 @@
                     }
                 }
             });
+            
+            let seen = false;
+            try { seen = localStorage.getItem('soopMatchTutorialSeen') === 'true'; } catch(e) {}
+            if (!seen && window.tutorialStep === 0) {
+                window.tutorialStep = 1;
+                window.updateTutorialUI();
+            }
         };
 
         window.goMain = () => {
@@ -2077,6 +2262,10 @@
         window.openModeModal = () => {
             document.getElementById('modal-mode').classList.remove('hidden');
             document.getElementById('modal-mode').style.display = 'flex';
+            if (window.tutorialStep === 1) {
+                window.tutorialStep = 2;
+                window.updateTutorialUI();
+            }
         };
 
         window.toggleModeModal = (show) => {
@@ -2093,15 +2282,22 @@
             sounds.select();
             gameMode = mode;
             window.toggleModeModal(false);
-            window.startGame();
+            
+            if (window.tutorialStep === 2) {
+                window.tutorialStep = 0; 
+                window.updateTutorialUI();
+                window.startTutorial(); 
+            } else {
+                window.startGame();
+            }
         };
 
         window.startGame = async () => {
             try {
-                let newBoard = generateTiles();
+                let newBoard = window.generateTiles();
                 let retry = 50; 
                 while (countTiles(newBoard) > 0 && countMatchablePairs(newBoard) === 0 && retry > 0) {
-                     newBoard = shuffleRemainingTiles(newBoard);
+                     newBoard = window.shuffleRemainingTiles(newBoard);
                      retry--;
                 }
                 board = newBoard;
@@ -2118,11 +2314,11 @@
                 view = 'loading';
                 renderApp();
                 
-                await preloadImages(board);
+                await window.preloadImages(board);
 
                 view = 'playing';
                 renderApp();
-                startTimer();
+                window.startTimer();
             } catch(e) {
                 console.error("Game start error:", e);
                 window.showToast("게임 시작 중 오류가 발생했습니다.", true);
@@ -2135,7 +2331,7 @@
         window.handlePlayClick = () => {
             window.initAudio(); 
             sounds.select();
-            validateCustomPicks();
+            window.validateCustomPicks();
             window.openModeModal();
         };
 
@@ -2166,6 +2362,7 @@
             sounds.select();
             if (confirm("모든 설정과 기록이 초기화됩니다. 계속하시겠습니까?")) {
                 localStorage.removeItem('soopMatchUserData');
+                localStorage.removeItem('soopMatchTutorialSeen');
                 
                 if (currentUser && !currentUser.isAnonymous) {
                     set(ref(db, 'users/' + currentUser.uid + '/soopMatch'), null).then(() => {
@@ -2187,10 +2384,10 @@
             document.getElementById('overlay-shuffling').style.display = 'flex';
 
             setTimeout(() => {
-                let newBoard = shuffleRemainingTiles(board);
+                let newBoard = window.shuffleRemainingTiles(board);
                 let retry = 50;
                 while (countTiles(newBoard) > 0 && countMatchablePairs(newBoard) === 0 && retry > 0) {
-                     newBoard = shuffleRemainingTiles(newBoard);
+                     newBoard = window.shuffleRemainingTiles(newBoard);
                      retry--;
                 }
                 board = newBoard;
@@ -2221,7 +2418,7 @@
         };
 
         window.handleTileClick = (r, c) => {
-            if (status !== 'playing' || !board[r][c] || drawnPath) return;
+            if ((status !== 'playing' && status !== 'tutorial') || !board[r][c] || drawnPath) return;
 
             hintTiles = null; 
 
@@ -2286,9 +2483,15 @@
                         matchesLeft--;
 
                         if (matchesLeft === 0) {
-                            status = 'clear';
-                            sounds.clear();
-                            stopTimer();
+                            if (view === 'tutorial') {
+                                status = 'tutorial_clear';
+                                sounds.clear();
+                            } else {
+                                status = 'clear';
+                                sounds.clear();
+                                window.stopTimer();
+                            }
+                            if (view === 'tutorial') window.updateTutorialMessage();
                             updateMatchableCountUI(); 
                             renderApp();
                         } else if (view === 'playing' && countMatchablePairs(board) === 0) {
@@ -2296,10 +2499,10 @@
                             document.getElementById('overlay-shuffling').style.display = 'flex';
 
                             setTimeout(() => {
-                                let shuffledBoard = shuffleRemainingTiles(board);
+                                let shuffledBoard = window.shuffleRemainingTiles(board);
                                 let retry = 50;
                                 while (countTiles(shuffledBoard) > 0 && countMatchablePairs(shuffledBoard) === 0 && retry > 0) {
-                                    shuffledBoard = shuffleRemainingTiles(shuffledBoard);
+                                    shuffledBoard = window.shuffleRemainingTiles(shuffledBoard);
                                     retry--;
                                 }
                                 board = shuffledBoard;
@@ -2307,10 +2510,12 @@
                                 document.getElementById('overlay-shuffling').classList.add('hidden');
                                 document.getElementById('overlay-shuffling').style.display = 'none';
                                 
+                                if (view === 'tutorial') window.updateTutorialMessage();
                                 updateMatchableCountUI(); 
                                 renderApp();
-                            }, 1500);
+                            }, 1500); // 1.5초 후 섞기 완료
                         } else {
+                            if (view === 'tutorial') window.updateTutorialMessage();
                             updateMatchableCountUI(); 
                             renderApp();
                         }
