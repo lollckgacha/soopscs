@@ -152,7 +152,6 @@
                         <ul class="list-disc pl-5 space-y-1.5 text-[11px] sm:text-xs text-sky-700 font-medium leading-relaxed">
                             <li><strong>구글 로그인 시 클리어 기록이 서버에 저장됩니다!</strong></li>
                             <li>아바타 이미지 교체 및 스트리머 추가 문의는 언제나 환영입니다!</li>
-                            <li>버츄얼 스트리머만이 아닌, 일반 캠 스트리머 분들도 추가해드립니다!</li>
                             <li>버그 제보 및 문의는 아래 이메일로 부탁드립니다.</li>
                             <li class="font-bold text-blue-600">이메일: konamp63@gmail.com</li>
                         </ul>
@@ -328,60 +327,59 @@
         <div id="modal-custom-pick" class="absolute inset-0 z-[80] bg-slate-50 flex flex-col hidden" style="touch-action: auto;">
             
             <!-- 상단 헤더 -->
-            <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-slate-200 shadow-sm shrink-0 sticky top-0 z-50">
-                <button onclick="window.closeCustomPickModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors">
+            <div class="bg-white px-3 sm:px-4 py-3 flex items-center justify-between border-b border-slate-200 shadow-sm shrink-0 sticky top-0 z-50">
+                <button onclick="window.closeCustomPickModal()" class="px-3 sm:px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm sm:text-base font-medium transition-colors">
                     취소
                 </button>
-                <div class="text-lg font-bold text-slate-800 flex items-center">
-                    멤버 선택 <span id="custom-pick-count-header" class="text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-lg ml-1 text-sm border border-slate-200">전체 사용</span>
+                <div class="text-base sm:text-lg font-bold text-slate-800 flex items-center">
+                    멤버 선택 <span id="custom-pick-count-header" class="text-slate-600 bg-slate-100 px-2 py-0.5 rounded-lg ml-1 text-xs sm:text-sm border border-slate-200">전체 사용</span>
                 </div>
-                <button onclick="window.saveCustomPicks()" class="px-4 py-2 bg-[#2563eb] text-white rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-sm">
+                <button onclick="window.saveCustomPicks()" class="px-3 sm:px-4 py-2 bg-[#2563eb] text-white rounded-xl text-sm sm:text-base font-bold hover:bg-blue-700 transition-colors shadow-sm">
                     저장
                 </button>
             </div>
             
-            <div class="flex-1 overflow-y-auto p-3 sm:p-4 flex flex-col gap-3 sm:gap-4 max-w-6xl mx-auto w-full">
+            <div id="custom-pick-modal-inner" class="flex-1 overflow-y-auto p-3 sm:p-4 flex flex-col gap-3 sm:gap-4 max-w-5xl mx-auto w-full">
                 
                 <!-- 선택된 멤버 영역 -->
                 <div class="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-sm shrink-0 flex flex-col gap-3">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <span class="text-sm font-bold text-slate-700 flex items-center gap-1.5">
-                            <span class="text-emerald-500">✅</span> 선택된 멤버 <span class="text-xs font-normal text-slate-400">(눌러서 제외)</span>
+                            <span class="text-emerald-500">✅</span> 선택된 멤버 <span class="text-[0.65rem] sm:text-xs font-normal text-slate-400">(눌러서 제외, 지정 안하면 무작위)</span>
                         </span>
-                        <div class="flex flex-wrap gap-2 text-xs font-medium">
+                        <div class="flex flex-wrap gap-1.5 sm:gap-2 text-[0.65rem] sm:text-xs font-medium">
                             <button onclick="window.clearTempPicks()" class="text-red-500 hover:bg-red-50 px-2 py-1 rounded transition-colors border border-transparent hover:border-red-200">전체 취소</button>
                             <button onclick="window.addAllFilteredToTemp()" class="text-blue-500 hover:bg-blue-50 px-2 py-1 rounded transition-colors border border-transparent hover:border-blue-200">전체 담기</button>
                             <button onclick="window.fillRandomTempPicks()" class="text-purple-500 hover:bg-purple-50 px-2 py-1 rounded transition-colors border border-transparent hover:border-purple-200">무작위 채우기</button>
                         </div>
                     </div>
                     
-                    <!-- 12칸 x 2줄 표기 (선택된 멤버만 노출) -->
-                    <div class="w-full overflow-x-auto hide-scrollbar pb-1">
-                        <div id="selected-members-container" class="grid grid-cols-12 grid-rows-2 gap-x-1 gap-y-2 min-w-[500px] sm:min-w-[600px] w-full">
+                    <div id="selected-wrapper" class="w-full">
+                        <div id="selected-members-container" class="grid grid-cols-12 grid-rows-2 gap-y-3 gap-x-2 w-full">
                             <!-- JS로 동적 생성됨 -->
                         </div>
                     </div>
                 </div>
 
                 <!-- 검색창 및 필터 버튼 -->
-                <div class="flex flex-col gap-2 shrink-0 z-30 relative"> <!-- z-index 상향 및 relative 추가 -->
+                <div class="flex flex-col gap-2 shrink-0 z-30 relative"> 
                     <div class="flex gap-2 relative w-full">
                         <div class="relative flex-1">
                             <input type="text" id="custom-search" oninput="window.handleCustomPickSearch(this.value)" placeholder="스트리머 이름 검색..." class="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all shadow-sm text-sm font-medium">
                             <svg class="absolute left-3.5 top-3 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </div>
-                        <button onclick="window.toggleGroupSection()" class="px-4 bg-white hover:bg-slate-50 text-slate-600 rounded-xl border border-slate-200 shadow-sm transition-colors flex items-center justify-center">
+                        <button onclick="window.toggleGroupSection()" class="px-4 bg-[#2563eb] hover:bg-blue-700 text-white rounded-xl shadow-sm transition-colors flex items-center justify-center">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
                         </button>
                         
                         <!-- 펼쳐지는 그룹 필터 팝업 (드롭다운 방식) -->
-                        <div id="group-filter-section" class="absolute top-full right-0 mt-2 w-[calc(100vw-1.5rem)] sm:w-[480px] max-w-xl bg-white border border-slate-300 rounded-2xl shadow-2xl hidden flex-col z-50 overflow-hidden">
+                        <div id="group-filter-section" class="absolute top-full right-0 mt-2 w-[480px] max-w-xl bg-white border border-slate-300 rounded-2xl shadow-2xl hidden flex-col z-50 overflow-hidden">
                             <div class="flex justify-between items-center border-b border-slate-100 p-3 bg-slate-50">
                                 <span class="text-xs font-bold text-slate-600">그룹/크루 필터 (다중 선택)</span>
                                 <button onclick="window.toggleGroupSection()" class="text-xs font-bold text-slate-500 hover:text-slate-800 bg-slate-200 hover:bg-slate-300 px-2.5 py-1 rounded transition-colors">닫기 ✕</button>
                             </div>
                             <div class="p-3 max-h-[40vh] overflow-y-auto">
-                                <div id="group-checkboxes-container" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                                <div id="group-checkboxes-container" class="grid grid-cols-6 lg:grid-cols-8 gap-2.5">
                                     <!-- JS 동적 생성 -->
                                 </div>
                             </div>
@@ -391,7 +389,7 @@
 
                 <!-- 스트리머 리스트 -->
                 <div class="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-sm flex-1 min-h-0 flex flex-col relative">
-                    <div id="custom-list" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 sm:gap-3 content-start">
+                    <div id="custom-list" class="grid grid-cols-8 lg:grid-cols-10 gap-3 content-start">
                         <!-- JS 동적 생성 -->
                     </div>
                 </div>
@@ -837,6 +835,39 @@
             }
             GRID_ROWS = ROWS;
             GRID_COLS = COLS;
+            
+            window.applyModalLayout();
+            if (document.getElementById('modal-custom-pick').classList.contains('hidden') === false) {
+                window.renderSelectedMembers();
+                window.renderCustomPickList();
+            }
+        };
+
+        // PC/모바일 버튼에 따른 커스텀 픽 모달 UI 동적 레이아웃 변경 함수
+        window.applyModalLayout = () => {
+            const modalInner = document.getElementById('custom-pick-modal-inner');
+            const selectedContainer = document.getElementById('selected-members-container');
+            const listContainer = document.getElementById('custom-list');
+            const groupContainer = document.getElementById('group-checkboxes-container');
+            const groupPopup = document.getElementById('group-filter-section');
+
+            if (!modalInner || !selectedContainer || !listContainer || !groupContainer) return;
+
+            if (layoutMode === 'PC') {
+                // PC에 적합하게 넓은 영역 사용
+                modalInner.className = "flex-1 overflow-y-auto p-4 flex flex-col gap-4 max-w-5xl mx-auto w-full";
+                selectedContainer.className = "grid grid-cols-12 grid-rows-2 gap-y-3 gap-x-2 w-full";
+                listContainer.className = "grid grid-cols-8 lg:grid-cols-10 gap-3 content-start";
+                groupContainer.className = "grid grid-cols-4 sm:grid-cols-6 gap-2.5";
+                groupPopup.className = "absolute top-full right-0 mt-2 w-[480px] max-w-xl bg-white border border-slate-300 rounded-2xl shadow-2xl hidden flex-col z-50 overflow-hidden";
+            } else {
+                // 모바일에 최적화하여 좁고 길게 사용, 항목들을 크게
+                modalInner.className = "flex-1 overflow-y-auto p-2 flex flex-col gap-3 max-w-md mx-auto w-full";
+                selectedContainer.className = "grid grid-cols-6 grid-rows-4 gap-y-2 gap-x-1 w-full";
+                listContainer.className = "grid grid-cols-4 sm:grid-cols-5 gap-2 content-start";
+                groupContainer.className = "grid grid-cols-2 sm:grid-cols-3 gap-2";
+                groupPopup.className = "absolute top-full left-0 right-0 mt-2 w-full bg-white border border-slate-300 rounded-2xl shadow-2xl hidden flex-col z-50 overflow-hidden";
+            }
         };
 
         /* =========================================================================
@@ -985,12 +1016,13 @@
             
             availableGroups = getAvailableGroups();
             if (customFilterState.groups.length === 0) {
-                customFilterState.groups = []; // 초기에는 아무 그룹도 필터링 안함 (전체 보기)
+                customFilterState.groups = []; 
             }
             
             customFilterState.search = '';
             document.getElementById('custom-search').value = '';
             
+            window.applyModalLayout();
             window.renderGroupCheckboxes();
             window.updateCustomPickUI();
         };
@@ -1023,9 +1055,14 @@
 
         window.toggleGroupSection = () => {
             sounds.select();
-            const section = document.getElementById('group-filter-section');
-            section.classList.toggle('hidden');
-            section.classList.toggle('flex');
+            const popup = document.getElementById('group-filter-section');
+            if (popup.classList.contains('hidden')) {
+                popup.classList.remove('hidden');
+                popup.classList.add('flex');
+            } else {
+                popup.classList.add('hidden');
+                popup.classList.remove('flex');
+            }
         };
 
         window.updateGroupFilterSelection = () => {
@@ -1123,15 +1160,16 @@
             window.renderCustomPickList();
         };
 
-        // 상단 선택된 멤버 렌더링 (이름 포함, 12칸씩 배치)
+        // 선택된 멤버 렌더링 (PC/Mobile 분기에 따른 CSS 클래스 적용)
         window.renderSelectedMembers = () => {
             const container = document.getElementById('selected-members-container');
             const data = getStreamersData();
             
-            // 0명일 때는 빈칸을 보여주는 대신 직관적인 메시지를 띄움
+            const colSpan = layoutMode === 'PC' ? 'col-span-12 row-span-2' : 'col-span-6 row-span-4';
+            
             if (tempPicks.length === 0) {
                 container.innerHTML = `
-                    <div class="col-span-12 row-span-2 py-8 text-center text-slate-400 font-bold text-sm bg-slate-50 rounded-xl border border-slate-100/50 w-full flex flex-col items-center justify-center">
+                    <div class="${colSpan} py-8 text-center text-slate-400 font-bold text-sm bg-slate-50 rounded-xl border border-slate-100/50 w-full flex flex-col items-center justify-center">
                         <span class="text-xl mb-1">🎲</span>
                         선택된 멤버가 없습니다.<br>저장 시 전체 멤버 중 무작위로 등장합니다.
                     </div>
@@ -1139,23 +1177,33 @@
                 return;
             }
 
+            const avatarClass = layoutMode === 'PC' ? 'w-10 h-10 sm:w-12 sm:h-12' : 'w-8 h-8 sm:w-10 sm:h-10';
+            const textClass = layoutMode === 'PC' ? 'text-[0.65rem] sm:text-xs mt-1' : 'text-[0.6rem] mt-0.5';
+
             let html = '';
-            // 선택된 인원만큼만 12칸 그리드에 깔끔하게 배치 (이름까지 보여 목록 누락 착각 방지)
-            for(let i=0; i<tempPicks.length; i++) {
-                const id = tempPicks[i];
-                const s = data.find(x => String(x.id) === String(id));
-                if (s) {
-                    const imgSrc = s.imgs && s.imgs.length > 0 ? s.imgs[0] : '';
-                    const fb = `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=0f172a&color=38bdf8`;
+            for(let i=0; i<UNIQUE_TILES; i++) {
+                if (i < tempPicks.length) {
+                    const id = tempPicks[i];
+                    const s = data.find(x => String(x.id) === String(id));
+                    if (s) {
+                        const imgSrc = s.imgs && s.imgs.length > 0 ? s.imgs[0] : '';
+                        const fb = `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=0f172a&color=38bdf8`;
+                        html += `
+                            <div class="cursor-pointer group flex flex-col items-center justify-start relative w-full" onclick="window.toggleCustomPick('${id}')" title="눌러서 제외">
+                                <div class="${avatarClass} rounded-full overflow-hidden bg-slate-200 border-2 border-[#3b82f6] transition-transform group-hover:scale-95 group-active:scale-90 shrink-0">
+                                    <img src="${imgSrc}" onerror="this.onerror=null; this.src='${fb}';" class="w-full h-full object-cover">
+                                </div>
+                                <span class="${textClass} font-bold text-slate-700 text-center truncate w-full">${s.name}</span>
+                                <div class="absolute top-0 right-1/2 translate-x-3.5 -translate-y-1 bg-red-500 text-white rounded-full p-0.5 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                    <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else {
                     html += `
-                        <div class="cursor-pointer group flex flex-col items-center justify-start relative w-full" onclick="window.toggleCustomPick('${id}')" title="눌러서 제외">
-                            <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-full overflow-hidden bg-slate-200 border-2 border-[#3b82f6] transition-transform group-hover:scale-95 group-active:scale-90 shrink-0">
-                                <img src="${imgSrc}" onerror="this.onerror=null; this.src='${fb}';" class="w-full h-full object-cover">
-                            </div>
-                            <span class="text-[0.6rem] sm:text-[0.65rem] font-bold text-slate-700 text-center truncate w-full mt-1">${s.name}</span>
-                            <div class="absolute top-0 right-1/2 translate-x-3.5 -translate-y-1 bg-red-500 text-white rounded-full p-0.5 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            </div>
+                        <div class="flex flex-col items-center justify-start relative w-full">
+                            <div class="${avatarClass} rounded-full bg-slate-100 border border-slate-200 shrink-0"></div>
                         </div>
                     `;
                 }
@@ -1207,6 +1255,9 @@
                 return;
             }
 
+            const avatarSize = layoutMode === 'PC' ? 'w-12 h-12 sm:w-14 sm:h-14' : 'w-11 h-11';
+            const textSize = layoutMode === 'PC' ? 'text-[0.7rem] sm:text-xs' : 'text-[0.65rem]';
+
             pageData.forEach(s => {
                 const isSelected = tempPicks.includes(String(s.id));
                 const div = document.createElement('div');
@@ -1223,10 +1274,10 @@
 
                 div.innerHTML = `
                     ${checkBadge}
-                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden bg-slate-200 shrink-0 border border-slate-200 mb-1.5 transition-transform ${isSelected ? 'scale-95' : ''}">
+                    <div class="${avatarSize} rounded-full overflow-hidden bg-slate-200 shrink-0 border border-slate-200 mb-1.5 transition-transform ${isSelected ? 'scale-95' : ''}">
                         <img src="${imgSrc}" onerror="this.onerror=null; this.src='${fb}';" class="w-full h-full object-cover">
                     </div>
-                    <span class="text-[0.7rem] sm:text-xs font-bold text-slate-700 text-center truncate w-full px-0.5">${s.name}</span>
+                    <span class="${textSize} font-bold text-slate-700 text-center truncate w-full px-0.5">${s.name}</span>
                 `;
                 listContainer.appendChild(div);
             });
