@@ -80,6 +80,9 @@
     <script src="data.js"></script>
     <audio id="bgm-audio" src="bgm.mp3" loop preload="auto"></audio>
 
+    <!-- 토스트 알림 컨테이너 -->
+    <div id="toast-container" class="fixed top-10 left-1/2 transform -translate-x-1/2 z-[200] flex flex-col gap-2 pointer-events-none w-full max-w-sm items-center px-4"></div>
+
     <div id="app" class="w-full h-full flex flex-col items-center justify-center p-2 sm:p-4 relative">
         
         <!-- [1] 메인 화면 -->
@@ -345,7 +348,7 @@
                 <div class="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-sm shrink-0 flex flex-col gap-3">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <span class="text-sm font-bold text-slate-700 flex items-center gap-1.5">
-                            <span class="text-emerald-500">✅</span> 선택된 멤버 <span class="text-[0.65rem] sm:text-xs font-normal text-slate-400">(눌러서 제외, 지정 안하면 무작위)</span>
+                            <span class="text-emerald-500">✅</span> 선택된 멤버 <span class="text-[0.65rem] sm:text-xs font-normal text-slate-400">(지정 안하면 무작위)</span>
                         </span>
                         <div class="flex flex-wrap gap-1.5 sm:gap-2 text-[0.65rem] sm:text-xs font-medium">
                             <button onclick="window.clearTempPicks()" class="text-red-500 hover:bg-red-50 px-2 py-1 rounded transition-colors border border-transparent hover:border-red-200">전체 취소</button>
@@ -357,6 +360,18 @@
                     <div id="selected-wrapper" class="w-full">
                         <div id="selected-members-container" class="grid grid-cols-12 grid-rows-2 gap-y-3 gap-x-2 w-full">
                             <!-- JS로 동적 생성됨 -->
+                        </div>
+                    </div>
+
+                    <!-- 공유 및 코드 입력 영역 -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-3 border-t border-slate-100 mt-1">
+                        <button onclick="window.copyPickCode(this)" class="shrink-0 px-4 py-2 bg-[#eff6ff] hover:bg-blue-100 text-blue-600 text-xs sm:text-sm font-bold rounded-xl border border-blue-200 transition-colors flex items-center justify-center gap-1.5 min-w-[140px]">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            짧은 조합 코드 복사
+                        </button>
+                        <div class="flex-1 flex relative">
+                            <input type="text" id="pick-code-input" placeholder="공유받은 짧은 코드 붙여넣기" class="w-full uppercase tracking-widest pl-4 pr-16 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono transition-all font-bold placeholder:tracking-normal placeholder:font-normal">
+                            <button onclick="window.applyPickCode(this)" class="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-slate-800 text-white text-xs font-bold rounded-lg hover:bg-slate-700 transition-colors flex items-center justify-center">적용</button>
                         </div>
                     </div>
                 </div>
@@ -471,14 +486,14 @@
     <!-- 스크립트 (모듈화 및 Firebase 적용) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         /* 드래그 상태 관리 변수 */
         let isDragging = false;
 
         /* =========================================================================
-           [0] Web Audio API 기반 효과음 합성 시스템 및 BGM 관리
+           [0] Web Audio API 기반 효과음 합성 시스템 및 BGM 관리 & Toast UI
            ========================================================================= */
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx;
@@ -578,36 +593,79 @@
             }
         };
 
+        // 토스트 알림 함수
+        window.showToast = (msg, isError = false) => {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            toast.className = `px-5 py-3 rounded-full font-bold text-sm shadow-xl transition-all duration-300 transform translate-y-[-20px] opacity-0 flex items-center gap-2 ${isError ? 'bg-red-500 text-white' : 'bg-slate-800 text-white'}`;
+            toast.innerHTML = isError ? `<svg class="w-5 h-5 text-red-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> <span>${msg}</span>` 
+                                      : `<svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> <span>${msg}</span>`;
+            
+            container.appendChild(toast);
+            
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-[-20px]', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+            });
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-[-20px]', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        };
+
         /* =========================================================================
            [0-B] Firebase 초기화 및 Auth 로직
            ========================================================================= */
-        const fC = {
-            apiKey: atob("QUl6YVN5QTFBa0lVMVVqdXhiX0c4dWpJNFFHTlJXNkhjOHRwZnln"),
-            authDomain: atob("ZG9uZ3BhMjAyNi0yZmRhNS5maXJlYmFzZWFwcC5jb20="),
-            databaseURL: atob("aHR0cHM6Ly9kb25ncGEyMDI2LTJmZGE1LWRlZmF1bHQtcnRkYi5hc2lhLXNvdXRoZWFzdDEuZmlyZWJhc2VkYXRhYmFzZS5hcHA="),
-            projectId: atob("ZG9uZ3BhMjAyNi0yZmRhNQ=="),
-            storageBucket: atob("ZG9uZ3BhMjAyNi0yZmRhNS5maXJlYmFzZXN0b3JhZ2UuYXBw"),
-            messagingSenderId: atob("MTAwODI3NTYxNTgwNg=="),
-            appId: atob("MToxMDA4Mjc1NjE1ODA2OndlYjpiMzIzMGEyZDE4YTc3YWVjYjUyMTZm"),
-            measurementId: atob("Ry1QUFhNODA3N1lY")
-        };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        let firebaseConfig;
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+        } else {
+            // 로컬 테스트용 기본값
+            firebaseConfig = {
+                apiKey: atob("QUl6YVN5QTFBa0lVMVVqdXhiX0c4dWpJNFFHTlJXNkhjOHRwZnln"),
+                authDomain: atob("ZG9uZ3BhMjAyNi0yZmRhNS5maXJlYmFzZWFwcC5jb20="),
+                projectId: atob("ZG9uZ3BhMjAyNi0yZmRhNQ=="),
+                storageBucket: atob("ZG9uZ3BhMjAyNi0yZmRhNS5maXJlYmFzZXN0b3JhZ2UuYXBw"),
+                messagingSenderId: atob("MTAwODI3NTYxNTgwNg=="),
+                appId: atob("MToxMDA4Mjc1NjE1ODA2OndlYjpiMzIzMGEyZDE4YTc3YWVjYjUyMTZm")
+            };
+        }
 
-        const app = initializeApp(fC);
+        const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getDatabase(app);
+        const db = getFirestore(app);
         let currentUser = null;
         
         let userData = { 
             bestScore_challenge: 0, 
             bestTime_normal: 999999,
-            customPicks: [] // 멤버 선택 (0~24명 자유 저장)
+            customPicks: [] 
         };
 
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (e) {
+                console.warn("Auth init error:", e);
+            }
+        };
+        initAuth();
+
         window.saveUserData = async function() {
-            localStorage.setItem('soopMatchUserData', JSON.stringify(userData));
-            if(currentUser && !currentUser.isAnonymous) {
+            localStorage.setItem('soopMatchUserData', JSON.stringify(userData)); 
+            if(currentUser) {
                 try {
-                    await set(ref(db, 'users/' + currentUser.uid + '/soopMatch'), userData);
+                    const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'userData', 'matchData');
+                    await setDoc(userRef, userData, { merge: true });
                 } catch(e) {}
             }
         };
@@ -620,29 +678,25 @@
             if (u && !u.isAnonymous) {
                 bLHome.classList.add('hidden'); uPHome.classList.remove('hidden'); uPHome.classList.add('flex'); 
                 document.getElementById('user-name-home').innerText = "로그인됨";
-                
-                await loadFirebaseData(u.uid);
             } else {
                 bLHome.classList.remove('hidden'); uPHome.classList.add('hidden'); uPHome.classList.remove('flex');
-                await signInAnonymously(auth).catch(() => {});
+            }
+
+            if (u) {
+                try {
+                    const userRef = doc(db, 'artifacts', appId, 'users', u.uid, 'userData', 'matchData');
+                    const snap = await getDoc(userRef);
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        if (data.bestScore_challenge) userData.bestScore_challenge = data.bestScore_challenge;
+                        if (data.bestTime_normal) userData.bestTime_normal = data.bestTime_normal;
+                        if (data.customPicks) userData.customPicks = data.customPicks;
+                    }
+                    validateCustomPicks();
+                    window.updateMainMenuPickStatus();
+                } catch(e) { console.error("Firestore 로드 에러:", e); }
             }
         });
-
-        async function loadFirebaseData(uid) {
-            try {
-                const s = await get(ref(db, 'users/' + uid + '/soopMatch'));
-                if (s.exists()) {
-                    const data = s.val();
-                    if (data.bestScore_challenge) userData.bestScore_challenge = data.bestScore_challenge;
-                    if (data.bestTime_normal) userData.bestTime_normal = data.bestTime_normal;
-                    if (data.customPicks) userData.customPicks = data.customPicks;
-                }
-                
-                validateCustomPicks();
-                window.updateMainMenuPickStatus();
-                window.saveUserData();
-            } catch(e) { console.error("Firebase 로드 에러:", e); }
-        }
 
         window.loginWithGoogle = async function() {
             window.initAudio();
@@ -680,11 +734,11 @@
             let data = [];
             try {
                 if (typeof SOOP_DATA !== 'undefined' && SOOP_DATA && SOOP_DATA.streamers) {
-                    data = SOOP_DATA.streamers;
+                    data = [...SOOP_DATA.streamers];
                 }
             } catch (e) {}
             if (data.length === 0 && typeof window !== 'undefined' && window.SOOP_DATA && window.SOOP_DATA.streamers) {
-                data = window.SOOP_DATA.streamers;
+                data = [...window.SOOP_DATA.streamers];
             }
             if (data.length === 0) {
                 data = [...FALLBACK_DATA.streamers];
@@ -854,14 +908,12 @@
             if (!modalInner || !selectedContainer || !listContainer || !groupContainer) return;
 
             if (layoutMode === 'PC') {
-                // PC에 적합하게 넓은 영역 사용
                 modalInner.className = "flex-1 overflow-y-auto p-4 flex flex-col gap-4 max-w-5xl mx-auto w-full";
                 selectedContainer.className = "grid grid-cols-12 grid-rows-2 gap-y-3 gap-x-2 w-full";
                 listContainer.className = "grid grid-cols-8 lg:grid-cols-10 gap-3 content-start";
                 groupContainer.className = "grid grid-cols-4 sm:grid-cols-6 gap-2.5";
                 groupPopup.className = "absolute top-full right-0 mt-2 w-[480px] max-w-xl bg-white border border-slate-300 rounded-2xl shadow-2xl hidden flex-col z-50 overflow-hidden";
             } else {
-                // 모바일에 최적화하여 좁고 길게 사용, 항목들을 크게
                 modalInner.className = "flex-1 overflow-y-auto p-2 flex flex-col gap-3 max-w-md mx-auto w-full";
                 selectedContainer.className = "grid grid-cols-6 grid-rows-4 gap-y-2 gap-x-1 w-full";
                 listContainer.className = "grid grid-cols-4 sm:grid-cols-5 gap-2 content-start";
@@ -886,15 +938,14 @@
             const streamersData = getStreamersData();
             let pool = [];
 
-            // 1. 가져오기: 사용자가 선택한 고정 멤버 (0명이면 빈 배열)
-            if (userData.customPicks && userData.customPicks.length > 0) {
+            // 1. 가져오기: 사용자가 선택한 고정 멤버
+            if (userData.customPicks && Array.isArray(userData.customPicks) && userData.customPicks.length > 0) {
                 pool = userData.customPicks.map(id => streamersData.find(s => String(s.id) === String(id))).filter(Boolean);
             }
             
-            // 2. 빈자리 채우기: 24명보다 적을 경우, 남은 자리를 전체 풀에서 무작위로 채움
+            // 2. 빈자리 채우기
             if(pool.length < UNIQUE_TILES) {
                 const existingIds = new Set(pool.map(s => String(s.id)));
-                // 이미 들어간 멤버 제외
                 let availableData = streamersData.filter(s => !existingIds.has(String(s.id)));
                 availableData = shuffleArray(availableData);
                 
@@ -902,7 +953,7 @@
                 pool = pool.concat(availableData.slice(0, needed));
             }
 
-            // 3. 만약 24명이 채 안된다면 (데이터 부족 등) 중복 허용해서라도 안전장치 채움
+            // 3. 만약 24명이 채 안된다면 중복 허용해서라도 채움 (데이터 부족 대비)
             while(pool.length < UNIQUE_TILES) {
                 pool.push(streamersData[Math.floor(Math.random() * streamersData.length)]);
             }
@@ -930,6 +981,17 @@
 
         const preloadImages = (boardData) => {
             return new Promise((resolve) => {
+                let isResolved = false;
+                const finish = () => {
+                    if (!isResolved) {
+                        isResolved = true;
+                        resolve();
+                    }
+                };
+                
+                // 3초 뒤에는 무조건 게임 화면으로 넘어가게 하는 안전장치
+                const fallbackTimer = setTimeout(finish, 3000);
+
                 const urls = new Set();
                 boardData.forEach(row => {
                     row.forEach(tile => {
@@ -937,17 +999,24 @@
                     });
                 });
 
-                const urlArray = Array.from(urls);
+                const urlArray = Array.from(urls).filter(Boolean); // undefined, null, 빈문자열 제거
                 const total = urlArray.length;
                 let loadedCount = 0;
 
-                if (total === 0) return resolve();
+                if (total === 0) return finish();
 
                 const updateProgress = () => {
+                    if (isResolved) return;
                     const percent = Math.round((loadedCount / total) * 100);
-                    document.getElementById('loading-bar').style.width = `${percent}%`;
-                    document.getElementById('loading-text').innerText = `${loadedCount} / ${total}`;
-                    if (loadedCount === total) resolve();
+                    const bar = document.getElementById('loading-bar');
+                    const txt = document.getElementById('loading-text');
+                    if(bar) bar.style.width = `${percent}%`;
+                    if(txt) txt.innerText = `${loadedCount} / ${total}`;
+                    
+                    if (loadedCount >= total) {
+                        clearTimeout(fallbackTimer);
+                        finish();
+                    }
                 };
 
                 updateProgress(); 
@@ -1004,7 +1073,7 @@
         };
 
         /* =========================================================================
-           [3-A] 커스텀 픽 (멤버 선택) 로직
+           [3-A] 커스텀 픽 (멤버 선택 및 공유) 로직
            ========================================================================= */
         window.openCustomPickModal = () => {
             window.initAudio();
@@ -1021,6 +1090,7 @@
             
             customFilterState.search = '';
             document.getElementById('custom-search').value = '';
+            document.getElementById('pick-code-input').value = '';
             
             window.applyModalLayout();
             window.renderGroupCheckboxes();
@@ -1139,6 +1209,90 @@
                 }
             }
             if (added) window.updateCustomPickUI();
+        };
+
+        /* =========================================================================
+           [3-B] 공유 코드 복사 & 적용 기능 (클라우드 DB & 6자리 짧은 코드)
+           ========================================================================= */
+        window.copyPickCode = async (btn) => {
+            sounds.select();
+            if (tempPicks.length === 0) {
+                window.showToast("선택된 멤버가 없습니다.", true);
+                return;
+            }
+            
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> 생성 중...`;
+            btn.disabled = true;
+
+            // 혼동하기 쉬운 문자(0,O,I,1,l)를 제외한 안전한 문자셋으로 6자리 코드 생성
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; 
+            let shortCode = '';
+            for(let i=0; i<6; i++) shortCode += chars.charAt(Math.floor(Math.random() * chars.length));
+            
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'sharedPicks', shortCode);
+                await setDoc(docRef, {
+                    picks: tempPicks,
+                    createdAt: Date.now()
+                });
+                
+                // 클립보드 복사 트릭
+                const textArea = document.createElement("textarea");
+                textArea.value = shortCode;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                window.showToast(`코드 [${shortCode}] 복사 완료!`);
+            } catch (e) {
+                console.error(e);
+                window.showToast("코드 생성 중 오류가 발생했습니다.", true);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        window.applyPickCode = async (btn) => {
+            sounds.select();
+            const input = document.getElementById('pick-code-input');
+            const code = input.value.trim().toUpperCase();
+            
+            if (!code || code.length !== 6) {
+                window.showToast("6자리 코드를 입력해주세요.", true);
+                return;
+            }
+            
+            const originalText = btn.innerText;
+            btn.innerText = "확인중";
+            btn.disabled = true;
+
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'sharedPicks', code);
+                const snap = await getDoc(docRef);
+                
+                if (snap.exists()) {
+                    const data = snap.data();
+                    if (data.picks && Array.isArray(data.picks)) {
+                        tempPicks = data.picks;
+                        window.updateCustomPickUI();
+                        window.showToast(`${tempPicks.length}명의 조합을 불러왔습니다!`);
+                        input.value = '';
+                    } else {
+                        window.showToast("유효하지 않은 데이터입니다.", true);
+                    }
+                } else {
+                    window.showToast("존재하지 않거나 만료된 코드입니다.", true);
+                }
+            } catch (e) {
+                console.error(e);
+                window.showToast("코드를 불러오는 중 오류가 발생했습니다.", true);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
         };
 
         // 전체 UI 업데이트
@@ -1901,31 +2055,39 @@
         };
 
         window.startGame = async () => {
-            let newBoard = generateTiles();
-            let retry = 50; 
-            while (countTiles(newBoard) > 0 && countMatchablePairs(newBoard) === 0 && retry > 0) {
-                 newBoard = shuffleRemainingTiles(newBoard);
-                 retry--;
-            }
-            board = newBoard;
-            selectedTile = null;
-            drawnPath = null;
-            hintTiles = null;
-            combo = 0; 
-            score = 0;
-            timeLeft = 60; 
-            timeElapsed = 0; 
-            matchesLeft = (ROWS * COLS) / 2;
-            status = 'playing';
-            
-            view = 'loading';
-            renderApp();
-            
-            await preloadImages(board);
+            try {
+                let newBoard = generateTiles();
+                let retry = 50; 
+                while (countTiles(newBoard) > 0 && countMatchablePairs(newBoard) === 0 && retry > 0) {
+                     newBoard = shuffleRemainingTiles(newBoard);
+                     retry--;
+                }
+                board = newBoard;
+                selectedTile = null;
+                drawnPath = null;
+                hintTiles = null;
+                combo = 0; 
+                score = 0;
+                timeLeft = 60; 
+                timeElapsed = 0; 
+                matchesLeft = (ROWS * COLS) / 2;
+                status = 'playing';
+                
+                view = 'loading';
+                renderApp();
+                
+                await preloadImages(board);
 
-            view = 'playing';
-            renderApp();
-            startTimer();
+                view = 'playing';
+                renderApp();
+                startTimer();
+            } catch(e) {
+                console.error("Game start error:", e);
+                window.showToast("게임 시작 중 오류가 발생했습니다.", true);
+                view = 'main';
+                status = 'idle';
+                renderApp();
+            }
         };
 
         window.handlePlayClick = () => {
