@@ -278,8 +278,8 @@
                     <div class="absolute inset-[-2px] border-2 border-slate-600/50 rounded-xl pointer-events-none z-0"></div>
                     <div id="board-grid" class="absolute inset-0 grid w-full h-full z-10"></div>
                     
-                    <svg id="path-overlay" class="absolute inset-0 pointer-events-none w-full h-full z-40 hidden" preserveAspectRatio="none" style="overflow: visible;">
-                        <polyline id="path-line" fill="none" stroke="#38bdf8" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-[0_0_12px_rgba(56,189,248,0.9)] path-line"></polyline>
+                    <svg id="path-overlay" class="absolute inset-0 pointer-events-none w-full h-full z-40" preserveAspectRatio="none" style="overflow: visible;">
+                        <!-- 선들은 스크립트에서 동적 생성됨 -->
                     </svg>
 
                     <svg id="error-overlay" class="absolute inset-0 pointer-events-none w-full h-full z-50 hidden" preserveAspectRatio="none" style="overflow: visible;">
@@ -868,7 +868,6 @@
         
         let board = [];
         let selectedTile = null;
-        let drawnPath = null;
         let status = 'idle'; 
         let score = 0;
         let matchesLeft = 0;
@@ -1063,7 +1062,6 @@
         window.startTutorial = async () => {
             board = window.generateTutorialTiles();
             selectedTile = null;
-            drawnPath = null;
             hintTiles = null;
             combo = 0;
             matchesLeft = 3;
@@ -1313,7 +1311,7 @@
         };
 
         window.toggleCustomPick = (id) => {
-            if(isDragging) return;
+            if(window.isDragging) return;
             sounds.select();
             const idx = window.tempPicks.findIndex(x => String(x) === String(id));
             if (idx > -1) {
@@ -1910,6 +1908,45 @@
             }, 500);
         };
 
+        const drawPathEffect = (path) => {
+            const overlay = document.getElementById('path-overlay');
+            const gridRows = board.length;
+            const gridCols = board[0].length;
+            
+            overlay.setAttribute('viewBox', `0 0 ${gridCols * 100} ${gridRows * 100}`);
+            
+            const points = path.map(p => {
+                let px = p.c * 100 + 50;
+                let py = p.r * 100 + 50;
+                
+                if (p.c < 0) px = -25;
+                else if (p.c >= gridCols) px = gridCols * 100 + 25;
+                
+                if (p.r < 0) py = -25;
+                else if (p.r >= gridRows) py = gridRows * 100 + 25;
+                
+                return `${px},${py}`;
+            }).join(' ');
+
+            const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            polyline.setAttribute('fill', 'none');
+            polyline.setAttribute('stroke', '#38bdf8');
+            polyline.setAttribute('stroke-width', '12');
+            polyline.setAttribute('stroke-linecap', 'round');
+            polyline.setAttribute('stroke-linejoin', 'round');
+            polyline.setAttribute('style', 'filter: drop-shadow(0px 0px 12px rgba(56,189,248,0.9))');
+            polyline.setAttribute('class', 'path-line');
+            polyline.setAttribute('points', points);
+            
+            overlay.appendChild(polyline);
+            
+            setTimeout(() => {
+                if (overlay.contains(polyline)) {
+                    overlay.removeChild(polyline);
+                }
+            }, 300);
+        };
+
         /* =========================================================================
            [5] 화면 렌더링 및 동적 픽셀 스케일링 로직
            ========================================================================= */
@@ -1994,8 +2031,6 @@
             
             grid.style.gridTemplateColumns = `repeat(${gCols}, ${tileSize}px)`;
             grid.style.gridTemplateRows = `repeat(${gRows}, ${tileSize}px)`;
-            
-            renderPath();
         };
 
         window.addEventListener('resize', resizeBoard);
@@ -2061,39 +2096,6 @@
             }
 
             resizeBoard();
-        };
-
-        const renderPath = () => {
-            const overlay = document.getElementById('path-overlay');
-            const polyline = document.getElementById('path-line');
-            if (drawnPath) {
-                const gridRows = board.length;
-                const gridCols = board[0].length;
-                overlay.setAttribute('viewBox', `0 0 ${gridCols * 100} ${gridRows * 100}`);
-                
-                const points = drawnPath.map(p => {
-                    let px = p.c * 100 + 50;
-                    let py = p.r * 100 + 50;
-                    
-                    if (p.c < 0) px = -25;
-                    else if (p.c >= gridCols) px = gridCols * 100 + 25;
-                    
-                    if (p.r < 0) py = -25;
-                    else if (p.r >= gridRows) py = gridRows * 100 + 25;
-                    
-                    return `${px},${py}`;
-                }).join(' ');
-                
-                polyline.setAttribute('points', points);
-                
-                polyline.classList.remove('path-line');
-                void polyline.offsetWidth; 
-                polyline.classList.add('path-line');
-                
-                overlay.classList.remove('hidden');
-            } else {
-                overlay.classList.add('hidden');
-            }
         };
 
         const updateMatchableCountUI = () => {
@@ -2302,7 +2304,6 @@
                 }
                 board = newBoard;
                 selectedTile = null;
-                drawnPath = null;
                 hintTiles = null;
                 combo = 0; 
                 score = 0;
@@ -2418,7 +2419,7 @@
         };
 
         window.handleTileClick = (r, c) => {
-            if ((status !== 'playing' && status !== 'tutorial') || !board[r][c] || drawnPath) return;
+            if ((status !== 'playing' && status !== 'tutorial') || !board[r][c]) return;
 
             hintTiles = null; 
 
@@ -2452,14 +2453,8 @@
                         showComboEffect(combo);
                     }
 
-                    const currentBoardInstance = board;
-                    const r1 = selectedTile.r;
-                    const c1 = selectedTile.c;
-                    const r2 = r;
-                    const c2 = c;
-
-                    drawnPath = path;
-                    renderPath();
+                    // 경로 선 그리기 이펙트를 비동기로 즉시 생성
+                    drawPathEffect(path);
                     
                     if (view === 'playing') {
                         score += 100 + bonusScore;
@@ -2469,57 +2464,50 @@
                         window.updateHeader();
                     }
                     
-                    setTimeout(() => {
-                        if (board !== currentBoardInstance) return;
+                    // 패 논리적 제거 및 상태 즉시 반영 (딜레이 제거)
+                    board[selectedTile.r][selectedTile.c] = null;
+                    board[r][c] = null;
+                    selectedTile = null;
+                    matchesLeft--;
 
-                        board[r1][c1] = null;
-                        board[r2][c2] = null;
-                        
-                        if (selectedTile && selectedTile.r === r1 && selectedTile.c === c1) {
-                            selectedTile = null;
-                        }
-                        drawnPath = null;
-                        
-                        matchesLeft--;
+                    renderBoard(); // 즉시 화면 재렌더링
 
-                        if (matchesLeft === 0) {
-                            if (view === 'tutorial') {
-                                status = 'tutorial_clear';
-                                sounds.clear();
-                            } else {
-                                status = 'clear';
-                                sounds.clear();
-                                window.stopTimer();
-                            }
-                            if (view === 'tutorial') window.updateTutorialMessage();
-                            updateMatchableCountUI(); 
-                            renderApp();
-                        } else if (view === 'playing' && countMatchablePairs(board) === 0) {
-                            document.getElementById('overlay-shuffling').classList.remove('hidden');
-                            document.getElementById('overlay-shuffling').style.display = 'flex';
-
-                            setTimeout(() => {
-                                let shuffledBoard = window.shuffleRemainingTiles(board);
-                                let retry = 50;
-                                while (countTiles(shuffledBoard) > 0 && countMatchablePairs(shuffledBoard) === 0 && retry > 0) {
-                                    shuffledBoard = window.shuffleRemainingTiles(shuffledBoard);
-                                    retry--;
-                                }
-                                board = shuffledBoard;
-                                
-                                document.getElementById('overlay-shuffling').classList.add('hidden');
-                                document.getElementById('overlay-shuffling').style.display = 'none';
-                                
-                                if (view === 'tutorial') window.updateTutorialMessage();
-                                updateMatchableCountUI(); 
-                                renderApp();
-                            }, 1500); // 1.5초 후 섞기 완료
+                    if (matchesLeft === 0) {
+                        if (view === 'tutorial') {
+                            status = 'tutorial_clear';
+                            sounds.clear();
                         } else {
+                            status = 'clear';
+                            sounds.clear();
+                            window.stopTimer();
+                        }
+                        if (view === 'tutorial') window.updateTutorialMessage();
+                        updateMatchableCountUI(); 
+                        renderApp();
+                    } else if (view === 'playing' && countMatchablePairs(board) === 0) {
+                        document.getElementById('overlay-shuffling').classList.remove('hidden');
+                        document.getElementById('overlay-shuffling').style.display = 'flex';
+
+                        setTimeout(() => {
+                            let shuffledBoard = window.shuffleRemainingTiles(board);
+                            let retry = 50;
+                            while (countTiles(shuffledBoard) > 0 && countMatchablePairs(shuffledBoard) === 0 && retry > 0) {
+                                shuffledBoard = window.shuffleRemainingTiles(shuffledBoard);
+                                retry--;
+                            }
+                            board = shuffledBoard;
+                            
+                            document.getElementById('overlay-shuffling').classList.add('hidden');
+                            document.getElementById('overlay-shuffling').style.display = 'none';
+                            
                             if (view === 'tutorial') window.updateTutorialMessage();
                             updateMatchableCountUI(); 
                             renderApp();
-                        }
-                    }, 300);
+                        }, 1500); 
+                    } else {
+                        if (view === 'tutorial') window.updateTutorialMessage();
+                        updateMatchableCountUI(); 
+                    }
                 } else {
                     combo = 0; 
                     sounds.error(); 
