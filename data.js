@@ -247,7 +247,7 @@ const SOOP_DATA = {
         "name": "김웰로",
         "channelUrl": "https://www.sooplive.co.kr/station/wellro314",
         "imgs": [
-            "images/streamers/gimwelro_3.png"
+            "images/streamers/09.webp"
         ]
     },
     {
@@ -327,7 +327,7 @@ const SOOP_DATA = {
         "name": "나나문",
         "channelUrl": "https://www.sooplive.co.kr/station/nanamoon777",
         "imgs": [
-            "images/streamers/nanamun.png"
+            "images/streamers/03.webp"
         ]
     },
     {
@@ -535,7 +535,7 @@ const SOOP_DATA = {
         "name": "달타",
         "channelUrl": "https://www.sooplive.co.kr/station/dalta20",
         "imgs": [
-            "images/streamers/dalta_2.png"
+            "images/streamers/11.webp"
         ]
     },
     {
@@ -895,7 +895,7 @@ const SOOP_DATA = {
         "name": "마다옴",
         "channelUrl": "https://www.sooplive.co.kr/station/madaomm",
         "imgs": [
-            "images/streamers/madaom_4.png"
+            "images/streamers/02.webp"
         ]
     },
     {
@@ -1031,7 +1031,7 @@ const SOOP_DATA = {
         "name": "모카",
         "channelUrl": "https://www.sooplive.co.kr/station/mocamu2",
         "imgs": [
-            "images/streamers/moka2.png"
+            "images/streamers/10.webp"
         ]
     },
     {
@@ -1071,7 +1071,7 @@ const SOOP_DATA = {
         "name": "문모모",
         "channelUrl": "https://www.sooplive.co.kr/station/doormomo",
         "imgs": [
-            "images/streamers/munmomo_11.png"
+            "images/streamers/05.webp"
         ]
     },
     {
@@ -2167,7 +2167,7 @@ const SOOP_DATA = {
         "name": "임하밍",
         "channelUrl": "https://www.sooplive.co.kr/station/imha22",
         "imgs": [
-            "images/streamers/imhaming.png"
+            "images/streamers/04.webp"
         ]
     },
     {
@@ -2335,7 +2335,7 @@ const SOOP_DATA = {
         "name": "천양",
         "channelUrl": "https://www.sooplive.co.kr/station/243000",
         "imgs": [
-            "images/streamers/cheonyang.webp"
+            "images/streamers/01.webp"
         ]
     },
     {
@@ -2487,7 +2487,7 @@ const SOOP_DATA = {
         "name": "카푸",
         "channelUrl": "https://www.sooplive.co.kr/station/kappuchan",
         "imgs": [
-            "images/streamers/kapu_8.png"
+            "images/streamers/07.webp"
         ]
     },
     {
@@ -2495,7 +2495,7 @@ const SOOP_DATA = {
         "name": "캬앙",
         "channelUrl": "https://www.sooplive.co.kr/station/kyaang123",
         "imgs": [
-            "images/streamers/kyaang_2.png"
+            "images/streamers/08.webp"
         ]
     },
     {
@@ -2719,7 +2719,7 @@ const SOOP_DATA = {
         "name": "플리",
         "channelUrl": "https://www.sooplive.co.kr/station/plincess",
         "imgs": [
-            "images/streamers/peulri_5.png"
+            "images/streamers/12.webp"
         ]
     },
     {
@@ -3703,7 +3703,7 @@ const SOOP_DATA = {
         "name": "체비",
         "channelUrl": "https://www.sooplive.co.kr/station/chebi2",
         "imgs": [
-            "images/streamers/chebi.png"
+            "images/streamers/06.webp"
         ]
     },
     {
